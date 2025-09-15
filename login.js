@@ -1,5 +1,5 @@
 // ======================================================================
-//             LOGIN.JS (VERSÃO FINAL E CORRIGIDA)
+//             LOGIN.JS (VERSÃO FINAL E CORRIGIDA - prontipro-96d26)
 // ======================================================================
 
 // Imports (mantidos como estavam)
