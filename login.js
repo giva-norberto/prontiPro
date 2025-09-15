@@ -1,17 +1,12 @@
 // ======================================================================
-//             LOGIN.JS (VERSÃO CORRIGIDA PARA USAR FIREBASE COMPAT)
+//             LOGIN.JS (VERSÃO DE TESTE COM REDIRECT)
 // ======================================================================
 
-// ❌ REMOVEMOS OS IMPORTS, pois o Firebase já foi carregado no HTML.
-// import { signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-// import { auth, provider } from "./firebase-config.js"; 
+// ✅ ADICIONADO 'signInWithRedirect' para o teste
+import { signInWithPopup, signInWithRedirect, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { auth, provider } from "./firebase-config.js"; 
 
 window.addEventListener('DOMContentLoaded', ( ) => {
-    // ✅ DEFINIMOS 'auth' e 'provider' usando o objeto 'firebase' global que o HTML criou.
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    // Captura dos elementos do DOM (mantida)
     const btnLoginGoogle = document.getElementById('btn-login-google');
     const loginForm = document.getElementById('login-form');
     const loginStatusDiv = document.getElementById('login-status');
@@ -23,23 +18,24 @@ window.addEventListener('DOMContentLoaded', ( ) => {
             if (loginStatusDiv) loginStatusDiv.textContent = "";
 
             try {
-                // ✅ Usamos a sintaxe "compat" para a função de login
-                await auth.signInWithPopup(provider);
-                
-                // Redirecionamento após sucesso
-                window.location.href = 'selecionar-empresa.html';
+                // =================================================================
+                // ✅ TESTE: Trocamos o pop-up pelo redirecionamento
+                await signInWithRedirect(auth, provider);
+                // =================================================================
 
             } catch (error) {
-                console.error("Erro no login com Google:", error);
-                if (loginStatusDiv && error.code !== 'auth/popup-closed-by-user') {
-                    loginStatusDiv.textContent = 'Não foi possível fazer login com o Google.';
+                // Este bloco de erro provavelmente não será alcançado com redirect,
+                // mas o mantemos por segurança.
+                console.error("Erro no início do login com Google Redirect:", error);
+                if (loginStatusDiv) {
+                    loginStatusDiv.textContent = 'Não foi possível iniciar o login com o Google.';
                 }
                 btnLoginGoogle.disabled = false;
             }
         });
     }
 
-    // Lógica do Login com E-mail e Senha
+    // Lógica do Login com E-mail e Senha (sem alterações)
     if (loginForm) {
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -52,10 +48,7 @@ window.addEventListener('DOMContentLoaded', ( ) => {
             const password = document.getElementById('login-senha').value;
 
             try {
-                // ✅ Usamos a sintaxe "compat" para a função de login
-                await auth.signInWithEmailAndPassword(email, password);
-
-                // Redirecionamento após sucesso
+                await signInWithEmailAndPassword(auth, email, password);
                 window.location.href = 'selecionar-empresa.html';
 
             } catch (error) {
