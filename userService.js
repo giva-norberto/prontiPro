@@ -17,10 +17,10 @@ const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 // ======================================================================
 // FUNÇÃO PRINCIPAL: O NOVO "GUARDA DE ACESSO"
-// Esta função substitui completamente a necessidade de um 'auth-guard.js' separado.
+// Esta função centraliza toda a lógica de permissão e roteamento.
 // ======================================================================
 
-export async function verificarAcesso( ) {
+export async function verificarAcesso() {
     // Se já temos um perfil na sessão, retorna imediatamente.
     if (cachedSessionProfile) return cachedSessionProfile;
     // Se uma verificação já está em andamento, aguarda por ela para evitar chamadas duplicadas.
@@ -53,13 +53,13 @@ export async function verificarAcesso( ) {
             // 3. LÓGICA DE ROTEAMENTO CENTRALIZADA (DECIDIR PARA ONDE IR)
             // Esta é a mudança mais importante. A decisão é tomada em um só lugar.
 
-            // Cenário A: Usuário tem múltiplas empresas ou nenhuma, e não está na tela de seleção.
+            // Cenário A: Usuário não tem exatamente UMA empresa E não está na tela de seleção.
             if (empresas.length !== 1 && currentPage !== 'selecionar-empresa.html') {
                 window.location.replace('selecionar-empresa.html');
                 return reject(new Error("Seleção de empresa necessária."));
             }
 
-            // Cenário B: Usuário tem exatamente 1 empresa, mas está na tela de seleção.
+            // Cenário B: Usuário tem exatamente UMA empresa, MAS está na tela de seleção.
             if (empresas.length === 1 && currentPage === 'selecionar-empresa.html') {
                 localStorage.setItem('empresaAtivaId', empresas[0].id);
                 window.location.replace('index.html');
@@ -99,7 +99,10 @@ export async function verificarAcesso( ) {
 
         } catch (error) {
             // Se qualquer passo falhar, rejeita a promessa.
-            console.error("❌ Erro no fluxo de verificação de acesso:", error.message);
+            // Apenas loga erros que não sejam de redirecionamento para não poluir o console.
+            if (!error.message.includes("Redirecionando") && !error.message.includes("Seleção de empresa necessária")) {
+                console.error("❌ Erro no fluxo de verificação de acesso:", error.message);
+            }
             reject(error);
         } finally {
             // Limpa a promessa de verificação para permitir futuras checagens se necessário.
@@ -111,10 +114,10 @@ export async function verificarAcesso( ) {
 }
 
 // ======================================================================
-// FUNÇÕES AUXILIARES (REVISADAS E MANTIDAS)
+// FUNÇÕES AUXILIARES (REVISADAS E COMPLETAS)
 // ======================================================================
 
-// ✅ CORREÇÃO: Transforma onAuthStateChanged em uma promessa para uso com async/await.
+/** Transforma onAuthStateChanged em uma promessa para uso com async/await. */
 function getCurrentUser() {
     return new Promise((resolve, reject) => {
         const unsubscribe = onAuthStateChanged(auth, user => {
@@ -124,7 +127,7 @@ function getCurrentUser() {
     });
 }
 
-// Constrói o objeto final da sessão do usuário.
+/** Constrói o objeto final da sessão do usuário. */
 async function buildSessionProfile(user, empresaId, empresaData) {
     const isAdmin = user.uid === ADMIN_UID;
     const isOwner = empresaData.donoId === user.uid;
@@ -151,16 +154,94 @@ async function buildSessionProfile(user, empresaId, empresaData) {
     };
 }
 
-// Limpa o cache ao fazer logout. ESSENCIAL para trocar de usuário.
+/** Limpa o cache ao fazer logout. Essencial para trocar de usuário. */
 export function clearCache() {
     cachedSessionProfile = null;
 }
 
-// As funções abaixo foram mantidas como estavam, pois sua lógica interna é sólida.
-export async function ensureUserAndTrialDoc(user) { /* ... seu código original ... */ }
-async function checkUserStatus(user, empresaData) { /* ... seu-código original ... */ }
-export async function getEmpresasDoUsuario(user) { /* ... seu código original ... */ }
-export async function getTodasEmpresas() { /* ... seu código original ... */ }
+/** Cria o documento do usuário e de trial se não existirem. */
+export async function ensureUserAndTrialDoc(user) {
+    if (!user) return;
+    try {
+        const userRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+            await setDoc(userRef, {
+                nome: user.displayName || user.email || 'Usuário',
+                email: user.email || '',
+                trialStart: serverTimestamp(),
+                isPremium: false,
+            });
+        } else if (!userSnap.data().trialStart) {
+            await updateDoc(userRef, {
+                trialStart: serverTimestamp(),
+            });
+        }
+    } catch (error) {
+        console.error("❌ Erro em ensureUserAndTrialDoc:", error);
+    }
+}
 
-// Cole aqui as implementações completas das suas funções originais que não foram alteradas.
-// (ensureUserAndTrialDoc, checkUserStatus, getEmpresasDoUsuario, getTodasEmpresas)
+/** Verifica se o usuário tem um plano ativo ou trial. */
+async function checkUserStatus(user, empresaData) {
+    try {
+        if (!user) return { hasActivePlan: false, isTrialActive: true };
+        const userRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return { hasActivePlan: false, isTrialActive: true };
+        const userData = userSnap.data();
+        if (!userData) return { hasActivePlan: false, isTrialActive: true };
+        if (userData.isPremium === true) return { hasActivePlan: true, isTrialActive: false };
+        if (!userData.trialStart?.seconds) return { hasActivePlan: false, isTrialActive: true };
+        let trialDurationDays = 15;
+        if (empresaData && typeof empresaData.freeEmDias === 'number') {
+            trialDurationDays = empresaData.freeEmDias;
+        }
+        const startDate = new Date(userData.trialStart.seconds * 1000);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + trialDurationDays);
+        return { hasActivePlan: false, isTrialActive: endDate > new Date() };
+    } catch (error) {
+        console.error("❌ Erro em checkUserStatus:", error);
+        return { hasActivePlan: false, isTrialActive: true };
+    }
+}
+
+/** Busca todas as empresas associadas a um usuário. */
+export async function getEmpresasDoUsuario(user) {
+    if (!user) return [];
+    const empresasEncontradas = new Map();
+    try {
+        const qDono = query(collection(db, "empresarios"), where("donoId", "==", user.uid));
+        const snapshotDono = await getDocs(qDono);
+        snapshotDono.forEach(doc => {
+            if (!empresasEncontradas.has(doc.id)) {
+                empresasEncontradas.set(doc.id, { id: doc.id, ...doc.data() });
+            }
+        });
+    } catch (e) { console.error("❌ Erro ao buscar empresas (dono):", e); }
+    try {
+        const mapaRef = doc(db, "mapaUsuarios", user.uid);
+        const mapaSnap = await getDoc(mapaRef);
+        if (mapaSnap.exists() && mapaSnap.data().empresas && mapaSnap.data().empresas.length > 0) {
+            const idsDeEmpresas = mapaSnap.data().empresas;
+            if (idsDeEmpresas.length === 0) return Array.from(empresasEncontradas.values());
+            const empresasRef = collection(db, "empresarios");
+            const q = query(empresasRef, where(documentId(), "in", idsDeEmpresas));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(doc => {
+                if (!empresasEncontradas.has(doc.id)) {
+                    empresasEncontradas.set(doc.id, { id: doc.id, ...doc.data() });
+                }
+            });
+        }
+    } catch(e) { console.error("❌ Erro ao buscar empresas (mapa):", e); }
+    return Array.from(empresasEncontradas.values());
+}
+
+/** (Função extra) Busca todas as empresas do sistema - útil para o painel de admin. */
+export async function getTodasEmpresas() {
+    const empresasCol = collection(db, "empresarios");
+    const snap = await getDocs(empresasCol);
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
