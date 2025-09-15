@@ -1,24 +1,26 @@
 // ======================================================================
-//        USER-SERVICE.JS (VERSÃO FINAL COM LÓGICA DE ACESSO REVISADA)
+//      USER-SERVICE.JS (VERSÃO ATUALIZADA PARA O NOVO PROJETO)
 // ======================================================================
 
-// Suas importações estão corretas e foram mantidas.
 import {
     collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, query, where, documentId
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { db, auth } from './firebase-config.js';
 
-// Variáveis de controle de sessão (sua lógica original mantida).
+// --- Variáveis de Controle ---
 let cachedSessionProfile = null;
-let isProcessing = false;
+let activeAccessCheck = null;
+
+// --- Constantes Configuráveis ---
+const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2"; // ✅ MELHORIA: ID do admin centralizado.
 
 // ======================================================================
-// SUAS FUNÇÕES ORIGINAIS (PRESERVADAS 100%)
-// Não há necessidade de alterar estas funções, elas já fazem o trabalho certo.
+// FUNÇÕES AUXILIARES (PRESERVADAS 100% CONFORME SOLICITADO)
 // ======================================================================
 
 export async function ensureUserAndTrialDoc() {
+    // ... seu código original, sem alterações ...
     try {
         const user = auth.currentUser;
         if (!user) return;
@@ -42,7 +44,7 @@ export async function ensureUserAndTrialDoc() {
 }
 
 async function checkUserStatus(user, empresaData) {
-    // ... (Seu código original aqui, sem alterações)
+    // ... seu código original, sem alterações ...
     try {
         if (!user) return { hasActivePlan: false, isTrialActive: true };
         const userRef = doc(db, "usuarios", user.uid);
@@ -67,6 +69,7 @@ async function checkUserStatus(user, empresaData) {
 }
 
 export async function getEmpresasDoUsuario(user) {
+    // ... seu código original, sem alterações ...
     if (!user) return [];
     const empresasEncontradas = new Map();
     try {
@@ -97,133 +100,135 @@ export async function getEmpresasDoUsuario(user) {
     return Array.from(empresasEncontradas.values());
 }
 
-// ======================================================================
-// ✅ FUNÇÃO PRINCIPAL 'verificarAcesso' (REVISADA E ORGANIZADA)
-// Esta função agora segue uma ordem lógica rigorosa para evitar conflitos.
-// ======================================================================
-export async function verificarAcesso() {
-    if (cachedSessionProfile) return cachedSessionProfile;
-    if (isProcessing) return Promise.reject(new Error("Processamento de acesso já em andamento."));
-    isProcessing = true;
-
+// ✅ NOVO: Helper que "promisifica" o onAuthStateChanged para uso com async/await.
+function getCurrentUser() {
     return new Promise((resolve, reject) => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            unsubscribe(); // Executa apenas uma vez para evitar loops
-            
-            try {
-                const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                const paginasPublicas = ['login.html', 'cadastro.html'];
-
-                // ORDEM LÓGICA CORRETA:
-                
-                // 1. O usuário está logado? Se não, mande para o login.
-                if (!user) {
-                    if (!paginasPublicas.includes(currentPage)) {
-                        window.location.replace('login.html');
-                    }
-                    return reject(new Error("Usuário não autenticado. Redirecionando..."));
-                }
-
-                // A partir daqui, TEMOS um usuário logado.
-                await ensureUserAndTrialDoc(user);
-                
-                // 2. Quantas empresas este usuário possui?
-                const empresas = await getEmpresasDoUsuario(user);
-
-                // 3. Se ele não tem NENHUMA empresa, o lugar dele é na tela de seleção.
-                if (empresas.length === 0) {
-                    if (currentPage !== 'selecionar-empresa.html') {
-                        window.location.replace('selecionar-empresa.html');
-                    }
-                    // Para o script aqui para deixar a tela de seleção carregar.
-                    return reject(new Error("Novo usuário. Exibindo tela de boas-vindas."));
-                }
-
-                // 4. Se ele tem MAIS DE UMA empresa, ele também precisa ir para a tela de seleção.
-                if (empresas.length > 1) {
-                    if (currentPage !== 'selecionar-empresa.html') {
-                        window.location.replace('selecionar-empresa.html');
-                    }
-                    return reject(new Error("Múltiplas empresas. Seleção necessária."));
-                }
-
-                // 5. Se chegamos aqui, ele tem EXATAMENTE UMA empresa.
-                const empresaAtivaId = empresas[0].id;
-                localStorage.setItem('empresaAtivaId', empresaAtivaId);
-                
-                // Se por acaso ele estava na tela de seleção, agora mandamos para o início.
-                if (currentPage === 'selecionar-empresa.html') {
-                    window.location.replace('index.html');
-                    return reject(new Error("Usuário com uma empresa. Redirecionando..."));
-                }
-
-                const empresaDocRef = doc(db, "empresarios", empresaAtivaId);
-                const empresaDocSnap = await getDoc(empresaDocRef);
-
-                if (!empresaDocSnap.exists()) {
-                    localStorage.removeItem('empresaAtivaId');
-                    window.location.replace('selecionar-empresa.html');
-                    return reject(new Error("Empresa ativa não encontrada."));
-                }
-                
-                const empresaData = empresaDocSnap.data();
-                const { hasActivePlan, isTrialActive } = await checkUserStatus(user, empresaData);
-
-                // 6. Verificação de assinatura (sua lógica mantida).
-                if (!hasActivePlan && !isTrialActive) {
-                    if (currentPage !== 'assinatura.html') {
-                        window.location.replace('assinatura.html');
-                    }
-                    return reject(new Error("Assinatura expirada."));
-                }
-
-                // 7. Finalmente, monta o perfil da sessão e libera o acesso.
-                const isAdmin = user.uid === "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
-                const isOwner = empresaData.donoId === user.uid;
-                let perfilDetalhado = empresaData;
-                let papel = 'dono';
-
-                if (!isOwner && !isAdmin) {
-                    const profSnap = await getDoc(doc(db, "empresarios", empresaAtivaId, "profissionais", user.uid));
-                    if (!profSnap.exists() || profSnap.data().status !== 'ativo') {
-                        localStorage.removeItem('empresaAtivaId');
-                        window.location.replace('login.html');
-                        return reject(new Error("Acesso de profissional revogado."));
-                    }
-                    perfilDetalhado = profSnap.data();
-                    papel = 'funcionario';
-                }
-                
-                cachedSessionProfile = { 
-                    user, 
-                    empresaId: empresaAtivaId, 
-                    perfil: perfilDetalhado, 
-                    isOwner: isOwner || isAdmin,
-                    isAdmin: isAdmin, 
-                    papel
-                };
-                resolve(cachedSessionProfile);
-
-            } catch (error) {
-                // Não redireciona se o erro for um dos esperados (ex: "Novo usuário")
-                if (!error.message.includes("Redirecionando") && !error.message.includes("boas-vindas") && !error.message.includes("Seleção necessária")) {
-                    console.error("❌ Erro final em verificarAcesso:", error);
-                }
-                reject(error);
-            } finally {
-                isProcessing = false;
-            }
-        });
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            unsubscribe();
+            resolve(user);
+        }, reject);
     });
 }
 
-// Suas outras funções exportadas, 100% preservadas.
+// ======================================================================
+//      FUNÇÃO PRINCIPAL 'verificarAcesso' (REVISADA E OTIMIZADA)
+// ======================================================================
+export async function verificarAcesso() {
+    if (cachedSessionProfile) return cachedSessionProfile;
+    if (activeAccessCheck) return activeAccessCheck; // Evita múltiplas chamadas simultâneas
+
+    // ✅ MELHORIA: Lógica encapsulada em uma função async auto-executável
+    // para um controle mais limpo com try/finally.
+    const accessCheckPromise = (async () => {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const paginasPublicas = ['login.html', 'cadastro.html'];
+
+        // 1. O usuário está logado?
+        const user = await getCurrentUser();
+        if (!user) {
+            if (!paginasPublicas.includes(currentPage)) {
+                window.location.replace('login.html');
+            }
+            throw new Error("Usuário não autenticado.");
+        }
+
+        // A partir daqui, TEMOS um usuário logado.
+        await ensureUserAndTrialDoc();
+        
+        // 2. Quantas empresas este usuário possui?
+        const empresas = await getEmpresasDoUsuario(user);
+
+        // ✅ MELHORIA: Lógica unificada. Se não tem exatamente 1 empresa, vai para a seleção.
+        if (empresas.length !== 1) {
+            if (currentPage !== 'selecionar-empresa.html') {
+                window.location.replace('selecionar-empresa.html');
+            }
+            throw new Error("Seleção de empresa necessária.");
+        }
+        
+        // 3. Se chegamos aqui, ele tem EXATAMENTE UMA empresa.
+        const empresaUnica = empresas[0];
+        localStorage.setItem('empresaAtivaId', empresaUnica.id);
+
+        if (currentPage === 'selecionar-empresa.html') {
+            window.location.replace('index.html');
+            throw new Error("Redirecionando para o painel principal.");
+        }
+
+        // 4. Validação da empresa e da assinatura.
+        const empresaDoc = await getDoc(doc(db, "empresarios", empresaUnica.id));
+        if (!empresaDoc.exists()) {
+            localStorage.removeItem('empresaAtivaId');
+            window.location.replace('selecionar-empresa.html');
+            throw new Error("Empresa ativa não encontrada.");
+        }
+
+        const empresaData = empresaDoc.data();
+        const { hasActivePlan, isTrialActive } = await checkUserStatus(user, empresaData);
+
+        if (!hasActivePlan && !isTrialActive) {
+            if (currentPage !== 'assinatura.html') {
+                window.location.replace('assinatura.html');
+            }
+            throw new Error("Assinatura ou período de teste expirado.");
+        }
+
+        // 5. Monta o perfil de sessão e libera o acesso.
+        const isAdmin = user.uid === ADMIN_UID;
+        const isOwner = empresaData.donoId === user.uid;
+        
+        let perfilDetalhado = empresaData;
+        let papel = 'dono';
+
+        if (!isOwner && !isAdmin) {
+            const profSnap = await getDoc(doc(db, "empresarios", empresaUnica.id, "profissionais", user.uid));
+            if (!profSnap.exists() || profSnap.data().status !== 'ativo') {
+                localStorage.removeItem('empresaAtivaId');
+                window.location.replace('login.html');
+                throw new Error("Acesso de profissional revogado ou inativo.");
+            }
+            perfilDetalhado = profSnap.data();
+            papel = 'funcionario';
+        }
+        
+        cachedSessionProfile = {
+            user,
+            empresaId: empresaUnica.id,
+            perfil: perfilDetalhado,
+            isOwner: isOwner || isAdmin,
+            isAdmin: isAdmin,
+
+            papel
+        };
+        
+        return cachedSessionProfile;
+    })();
+
+    activeAccessCheck = accessCheckPromise;
+
+    try {
+        return await activeAccessCheck;
+    } catch (error) {
+        // Loga apenas erros inesperados, não os de fluxo de redirecionamento.
+        const mensagensDeFluxo = ["Usuário não autenticado", "Seleção de empresa necessária", "Redirecionando para o painel", "Empresa ativa não encontrada", "Assinatura ou período de teste expirado", "Acesso de profissional revogado"];
+        if (!mensagensDeFluxo.some(msg => error.message.includes(msg))) {
+            console.error("❌ Erro inesperado em verificarAcesso:", error);
+        }
+        // Re-lança o erro para que a chamada original possa tratá-lo se necessário.
+        throw error;
+    } finally {
+        activeAccessCheck = null;
+    }
+}
+
+
+// --- Funções de Controle de Cache (Preservadas) ---
 export function clearCache() {
     cachedSessionProfile = null;
-    isProcessing = false;
 }
 
 export async function getTodasEmpresas() {
+    // ... seu código original, sem alterações ...
     const empresasCol = collection(db, "empresarios");
     const snap = await getDocs(empresasCol);
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
