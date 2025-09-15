@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronti - Meus Clientes</title>
+
+    <!-- Fontes e Ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Estilos -->
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+</head>
+<body>
+    <!-- O menu lateral padronizado será carregado aqui -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Conteúdo Principal da Página -->
+    <main class="main-content">
+        
+        <!-- CABEÇALHO PADRONIZADO: Título à esquerda, botão à direita -->
+        <div class="page-header">
+            <h1>Meus Clientes</h1>
+            <a href="novo-cliente.html" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i>
+                Cadastrar Novo Cliente
+            </a>
+        </div>
+        
+        <!-- GRID DE CARDS: Aplica o layout de grade responsiva -->
+        <div id="lista-clientes" class="dashboard-cards">
+            <!-- O script 'clientes.js' irá carregar os cards do banco de dados aqui. -->
+        </div>
+    </main>
+
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div id="modal-confirmacao" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modal-titulo">Confirmar Exclusão</h3>
+            <p id="modal-mensagem">Você tem certeza que deseja excluir este cliente?</p>
+            <div class="modal-botoes" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <button id="btn-modal-cancelar" class="btn">Cancelar</button>
+                <button id="btn-modal-confirmar" class="btn btn-remove">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+    // Carrega o menu lateral padronizado de um arquivo externo.
+    // Para que isso funcione, a página deve ser aberta através de um servidor web (ex: Live Server do VSCode).
+    document.addEventListener("DOMContentLoaded", function() {
+      const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
+      if (sidebarPlaceholder) {
+        fetch('menu-lateral.html')
+          .then(res => {
+            if (!res.ok) {
+              throw new Error('Não foi possível carregar o menu. Verifique se o arquivo "menu-lateral.html" existe.');
+            }
+            return res.text();
+          })
+          .then(html => {
+            sidebarPlaceholder.innerHTML = html;
+            // Marca o link 'Clientes' como ativo no menu
+            const activeLink = document.querySelector('.sidebar-links a[href="clientes.html"]');
+            if (activeLink) activeLink.classList.add('active');
+          })
+          .catch(error => {
+            console.error('Erro ao carregar o menu lateral:', error);
+            sidebarPlaceholder.innerHTML = '<p style="color:red; padding: 20px;">Erro ao carregar menu.</p>';
+          });
+      }
+    });
+    </script>
+    
+    <!-- Scripts de bibliotecas externas -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    
+    <!-- Seu script principal para a lógica da página de clientes -->
+    <script src="clientes.js" type="module"></script>
+</body>
+</html>
