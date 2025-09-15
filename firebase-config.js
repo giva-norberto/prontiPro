@@ -1,38 +1,39 @@
 // ======================================================================
-// ARQUIVO: firebase-config.js (VERSÃO FINAL, PADRONIZADA E CORRIGIDA)
+// ARQUIVO: firebase-config.js (VERSÃO FINAL, PADRONIZADA E PRONTA PARA VITE + VERCEL)
+// Projeto: ProntiPro-nova
 // ======================================================================
 
-// ✅ Importação direta da CDN do Firebase (versão 10.13.2)
+// ✅ Importação modular do Firebase via CDN (versão 10.13.2)
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-// ✅ Configuração do projeto (prontipro-96d26)
+// ✅ Configuração do Firebase via variáveis de ambiente do Vite
 const firebaseConfig = {
-    apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
-    authDomain: "prontipro-96d26.firebaseapp.com",
-    projectId: "prontipro-96d26",
-    storageBucket: "prontipro-96d26.appspot.com", // ✅ formato correto do bucket
-    messagingSenderId: "700778884814",
-    appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// ✅ Função singleton para evitar inicializações múltiplas
+// ✅ Função Singleton para evitar inicializações múltiplas
 const getFirebaseApp = () => {
     return getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 };
 
-// Inicializa a instância única
+// Inicializa instâncias únicas
 const app = getFirebaseApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
-// Configurações adicionais para login Google
+// Configuração adicional para login Google
 provider.setCustomParameters({ prompt: "select_account" });
 setPersistence(auth, browserLocalPersistence);
 
-// ✅ Exporta as instâncias para uso em todo o app
+// ✅ Exporta as instâncias para uso em todo o projeto
 export { app, db, auth, storage, provider };
