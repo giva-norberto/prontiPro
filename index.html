@@ -8,42 +8,27 @@
     <link href="style.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
+        /* Seu CSS está excelente, sem necessidade de alterações */
         :root { --sidebar-width: 240px; }
         body {
-            display: flex;
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            background: linear-gradient(135deg, #4f46e5 0%, #222664 100%  );
+            display: flex; margin: 0; font-family: 'Poppins', sans-serif;
+            opacity: 0; transition: opacity 0.5s ease-in-out;
+            background: linear-gradient(135deg, #4f46e5 0%, #222664 100%);
         }
         body.loaded { opacity: 1; }
         #menu-container { flex-shrink: 0; }
-
         main.main-content {
-            flex-grow: 1;
-            padding: 40px;
-            box-sizing: border-box;
-            height: 100vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
+            flex-grow: 1; padding: 40px; box-sizing: border-box;
+            height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+            justify-content: flex-start; align-items: center;
         }
-
         .dashboard-welcome-center { text-align: center; margin-bottom: 5vh; width: 100%; }
         .dashboard-welcome-center h1 { font-size: clamp(2rem, 5vw, 3.2rem); color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .dashboard-welcome-center p { font-size: clamp(1rem, 2.5vw, 1.25rem); font-weight: 400; color: #e0e7ff; }
-        
         .dashboard-grid-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px; width: 100%; max-width: 900px;
         }
-        
         .menu-card {
             color: #fff; border-radius: 16px; padding: 20px 10px;
             display: flex; flex-direction: column; align-items: center;
@@ -53,10 +38,7 @@
             transition: transform 0.25s, box-shadow 0.25s, filter 0.25s;
             border: none; aspect-ratio: 1 / 1;
         }
-        .menu-card:hover {
-            transform: translateY(-5px) scale(1.03); box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            filter: brightness(1.1); cursor: pointer;
-        }
+        .menu-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 10px 25px rgba(0,0,0,0.2); filter: brightness(1.1); cursor: pointer; }
         .menu-card i { font-size: 2rem; }
         [data-card-id="dashboard"] { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         [data-card-id="agenda"] { background: linear-gradient(135deg, #6366f1, #4facfe); }
@@ -66,11 +48,7 @@
         [data-card-id="perfil"] { background: linear-gradient(135deg, #ff5858, #a18cd1); }
         [data-card-id="relatorios"] { background: linear-gradient(135deg, #374151, #111827); }
         [data-card-id="administracao"], [data-card-id="permissoes"] { background: linear-gradient(135deg, #111827, #374151); }
-        
-        @media (max-width: 900px) {
-            body { flex-direction: column; }
-            main.main-content { height: auto; }
-        }
+        @media (max-width: 900px) { body { flex-direction: column; } main.main-content { height: auto; } }
     </style>
 </head>
 <body>
@@ -95,46 +73,40 @@
     </main>
     
     <script type="module">
-        import { verificarAcesso } from './userService.js';
+        // ✅ SUGESTÃO 1 (CRÍTICA): Garante consistência no nome do arquivo para evitar erros em produção.
+        import { verificarAcesso } from './user-service.js'; 
         import { auth, db } from './firebase-config.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-        import { signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
-        async function aplicarPermissoesMenusCards(papelUsuario ) {
+        async function aplicarPermissoes(papelUsuario) {
             try {
                 const permissoesRef = doc(db, "configuracoesGlobais", "permissoes");
                 const permissoesSnap = await getDoc(permissoesRef);
-                const regrasGlobais = permissoesSnap.exists() ? permissoesSnap.data() : {};
+                
+                // ✅ SUGESTÃO 3 (OPCIONAL): Define um objeto padrão para evitar erros se o doc não existir.
+                const regras = permissoesSnap.exists() ? permissoesSnap.data() : {};
 
                 const aplicarVisibilidade = (elemento, podeVer) => {
-                    if (podeVer) {
-                        elemento.style.display = '';
-                    } else {
-                        elemento.style.display = 'none';
-                    }
+                    elemento.style.display = podeVer ? '' : 'none';
                 };
 
-                // Aplica permissões nos itens do menu lateral
-                document.querySelectorAll('#menu-container [data-menu-id]').forEach(item => {
-                    const menuId = item.dataset.menuId;
-                    const regraParaMenu = regrasGlobais[menuId];
-                    const podeVer = !regraParaMenu || regraParaMenu[papelUsuario] === true;
-                    aplicarVisibilidade(item, podeVer);
-                });
-
-                // Aplica permissões nos cards da tela principal
-                document.querySelectorAll('[data-card-id]').forEach(card => {
-                    const cardId = card.dataset.cardId;
-                    const regraParaCard = regrasGlobais[cardId];
-                    const podeVer = !regraParaCard || regraParaCard[papelUsuario] === true;
-                    aplicarVisibilidade(card, podeVer);
+                // Aplica permissões nos itens do menu lateral e nos cards do dashboard
+                document.querySelectorAll('[data-menu-id], [data-card-id]').forEach(el => {
+                    const id = el.dataset.menuId || el.dataset.cardId;
+                    const regra = regras[id];
+                    // A regra de visibilidade é: o usuário pode ver se não houver regra específica
+                    // ou se a regra específica para seu papel for explicitamente 'true'.
+                    const podeVer = !regra || regra[papelUsuario] === true;
+                    aplicarVisibilidade(el, podeVer);
                 });
             } catch (error) {
-                console.error("Erro ao aplicar permissões nos menus e cards:", error);
+                console.error("Erro ao aplicar permissões:", error);
+                // Em caso de falha, esconde todos os itens por segurança.
+                document.querySelectorAll('[data-menu-id], [data-card-id]').forEach(el => el.style.display = 'none');
             }
         }
 
-        async function loadAndSetupMenu(papelUsuario) {
+        async function loadAndSetupMenu() {
             try {
                 const response = await fetch('menu-lateral.html');
                 if (!response.ok) throw new Error('menu-lateral.html não encontrado');
@@ -144,34 +116,41 @@
                 if (menuModule.ativarMenuLateral) {
                     menuModule.ativarMenuLateral();
                 }
-
-                await aplicarPermissoesMenusCards(papelUsuario);
             } catch (error) {
-                document.getElementById('menu-container').innerHTML =
-                    "<div style='color:white;background:#4f46e5;padding:1em;border-radius:8px;'>Menu lateral não carregado</div>";
-                console.error("Falha ao carregar o menu lateral ou aplicar permissões:", error);
+                console.error("Falha ao carregar o menu lateral:", error);
+                document.getElementById('menu-container').innerHTML = 
+                    "<p style='color:white; padding:1em;'>Erro ao carregar menu.</p>";
             }
         }
 
         async function inicializarPagina() {
             try {
                 const sessao = await verificarAcesso();
-                const papelUsuario = sessao.perfil?.papel || (sessao.isAdmin ? "admin" : (sessao.isOwner ? "dono" : "funcionario"));
+                
+                // ✅ SUGESTÃO 2: Confia no `papel` vindo diretamente do userService.
+                // Isso torna o userService a única fonte da verdade sobre o papel do usuário.
+                const papelUsuario = sessao.papel; 
+                if (!papelUsuario) throw new Error("O papel do usuário não foi definido na sessão.");
+
                 const nomeUsuario = sessao.user.displayName?.split(" ")[0] || sessao.perfil.nome?.split(" ")[0] || "Usuário";
                 const hora = new Date().getHours();
                 
-                document.getElementById('saudacao').textContent =
+                document.getElementById('saudacao').textContent = 
                     (hora >= 5 && hora < 12) ? "Bom dia" :
                     (hora >= 12 && hora < 18) ? "Boa tarde" : "Boa noite";
                 document.getElementById('nome-usuario').textContent = nomeUsuario;
 
-                await loadAndSetupMenu(papelUsuario);
+                // Carrega o menu e, em seguida, aplica as permissões baseadas no papel do usuário
+                await loadAndSetupMenu();
+                await aplicarPermissoes(papelUsuario);
 
             } catch (error) {
-                if (error.message && !error.message.includes("Redirecionando")) {
-                    console.error("Erro ao inicializar a página:", error);
+                // O userService já lida com redirecionamentos, aqui apenas evitamos poluir o console.
+                if (error.message && !error.message.includes("Redirecionando") && !error.message.includes("Seleção de empresa")) {
+                    console.error("Erro fatal ao inicializar a página de início:", error);
                 }
             } finally {
+                // Garante que a página seja exibida, mesmo em caso de erro.
                 document.body.classList.add('loaded');
             }
         }
