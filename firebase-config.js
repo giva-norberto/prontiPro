@@ -1,20 +1,23 @@
 // ======================================================================
-// ARQUIVO: firebase-config.js (VERSÃO ÚNICA E CENTRAL)
-// =====================================================================
+// ARQUIVO: firebase-config.js (VERSÃO ÚNICA E CENTRAL | prontipro-96d26)
+// Projeto: prontipro
+// ID do projeto: prontipro-96d26
+// Número do projeto: 700778884814
+// ======================================================================
 
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-// Configuração do seu projeto Firebase. Use esta em todo o app.
+// Configuração do seu projeto Firebase - prontipro-96d26
 const firebaseConfig = {
-  apiKey: "AIzaSyA1CL5SbSWXe9843dgiopnmahCsrsF--us",
-  authDomain: "pronti-app-37c6e.firebaseapp.com",
-  projectId: "pronti-app-37c6e",
-  storageBucket: "pronti-app-37c6e.firebasestorage.app", // ✅ CORRIGIDO
-  messagingSenderId: "736700619274",
-  appId: "1:736700619274:web:557aa247905e56fa7e5df3"
+  apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
+  authDomain: "prontipro-96d26.firebaseapp.com",
+  projectId: "prontipro-96d26",
+  storageBucket: "prontipro-96d26.appspot.com", // <-- Corrigido para .appspot.com
+  messagingSenderId: "700778884814",
+  appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
 
 // Função Singleton: Garante que o app seja inicializado apenas uma vez.
@@ -25,25 +28,15 @@ const getFirebaseApp = () => {
 // Inicializa e exporta tudo a partir da instância única
 const app = getFirebaseApp();
 const auth = getAuth(app);
-
-// ✅ Agora basta chamar getStorage(app), não precisa forçar gs://
 const storage = getStorage(app);
 
 const provider = new GoogleAuthProvider();
-
-// ==================================================
-// ✨ CORREÇÃO IMPORTANTE ABAIXO ✨
-// Adiciona o parâmetro que força a tela de seleção de conta do Google
 provider.setCustomParameters({
   prompt: 'select_account'
 });
-// ==================================================
 
-// Conecta ao banco de dados com nome "pronti-app"
-const db = getFirestore(app, "pronti-app");
+const db = getFirestore(app);
 
-// Define a persistência do login
 setPersistence(auth, browserLocalPersistence);
 
-// Exporta as instâncias para serem usadas em outros arquivos
 export { app, db, auth, storage, provider };
