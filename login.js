@@ -1,12 +1,16 @@
 // ======================================================================
-//             LOGIN.JS (VERSÃO FINAL E CORRIGIDA - prontipro-96d26)
+//             LOGIN.JS (VERSÃO CORRIGIDA PARA USAR FIREBASE COMPAT)
 // ======================================================================
 
-// Imports (mantidos como estavam)
-import { signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { auth, provider } from "./firebase-config.js"; 
+// ❌ REMOVEMOS OS IMPORTS, pois o Firebase já foi carregado no HTML.
+// import { signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+// import { auth, provider } from "./firebase-config.js"; 
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', ( ) => {
+    // ✅ DEFINIMOS 'auth' e 'provider' usando o objeto 'firebase' global que o HTML criou.
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
     // Captura dos elementos do DOM (mantida)
     const btnLoginGoogle = document.getElementById('btn-login-google');
     const loginForm = document.getElementById('login-form');
@@ -19,14 +23,11 @@ window.addEventListener('DOMContentLoaded', () => {
             if (loginStatusDiv) loginStatusDiv.textContent = "";
 
             try {
-                await signInWithPopup(auth, provider);
+                // ✅ Usamos a sintaxe "compat" para a função de login
+                await auth.signInWithPopup(provider);
                 
-                // =================================================================================
-                // ✅ CORREÇÃO PRINCIPAL 1: FIM DO PISCA-PISCA
-                // Agora, TODOS os usuários são enviados para a "recepção" do seu aplicativo.
-                // A página 'selecionar-empresa.html' vai decidir para onde o usuário deve ir.
+                // Redirecionamento após sucesso
                 window.location.href = 'selecionar-empresa.html';
-                // =================================================================================
 
             } catch (error) {
                 console.error("Erro no login com Google:", error);
@@ -51,13 +52,11 @@ window.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('login-senha').value;
 
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                // ✅ Usamos a sintaxe "compat" para a função de login
+                await auth.signInWithEmailAndPassword(email, password);
 
-                // =================================================================================
-                // ✅ CORREÇÃO PRINCIPAL 2: FIM DO PISCA-PISCA
-                // O mesmo destino é aplicado aqui para consistência no fluxo do aplicativo.
+                // Redirecionamento após sucesso
                 window.location.href = 'selecionar-empresa.html';
-                // =================================================================================
 
             } catch (error) {
                 console.error("Erro no login manual:", error.code);
