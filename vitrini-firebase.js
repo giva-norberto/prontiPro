@@ -10,7 +10,7 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-
 
 // Configuração do seu projeto Firebase.
 const firebaseConfig = {
-  apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
+  apiKey: "AIzaSyBx9-J6AfiCznrgOGGHiFS62JFzexjwcyI",
   authDomain: "pronti-app-37c6e.firebaseapp.com",
   projectId: "pronti-app-37c6e",
   storageBucket: "pronti-app-37c6e.firebasestorage.app", // ✅ CORRIGIDO: Garante compatibilidade
