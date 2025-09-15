@@ -6,7 +6,7 @@
   <title>Login - Pronti</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
   <style>
-    /* Seu CSS permanece igual */
+    /* Seu CSS continua aqui, sem alterações */
     body {
       display: flex;
       justify-content: center;
@@ -14,25 +14,111 @@
       min-height: 100vh;
       background: var(--cor-fundo);
     }
-    .login-container { width: 100%; max-width: 400px; padding: 20px; } 
-    .login-card { background-color: var(--cor-branco); padding: 40px 30px; border-radius: 12px; box-shadow: var(--sombra-elevada); text-align: center; }
-    .login-card h1 { font-size: 2em; color: var(--cor-primaria); margin-bottom: 10px; }
-    .login-card p { color: var(--cor-texto-leve); margin-bottom: 30px; }
-    .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; font-size: 1em; font-weight: 600; color: #333; background-color: var(--cor-branco); border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out; }
-    .btn-google:hover { background-color: #f8f8f8; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .btn-google img { width: 20px; height: 20px; }
-    #login-status { margin-top: 20px; color: #d00; font-size: 0.9em; text-align: center; min-height: 20px; }
-    .divider { display: flex; align-items: center; text-align: center; color: var(--cor-texto-leve); margin: 20px 0; font-size: 0.9em; }
-    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eee; }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    } 
+    .login-card {
+      background-color: var(--cor-branco);
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: var(--sombra-elevada);
+      text-align: center;
+    }
+    .login-card h1 {
+      font-size: 2em;
+      color: var(--cor-primaria);
+      margin-bottom: 10px;
+    }
+    .login-card p {
+      color: var(--cor-texto-leve);
+      margin-bottom: 30px;
+    }
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      font-weight: 600;
+      color: #333;
+      background-color: var(--cor-branco);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-google:hover {
+      background-color: #f8f8f8;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-google img {
+      width: 20px;
+      height: 20px;
+    }
+    #login-status {
+      margin-top: 20px;
+      color: #d00;
+      font-size: 0.9em;
+      text-align: center;
+      min-height: 20px;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--cor-texto-leve);
+      margin: 20px 0;
+      font-size: 0.9em;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #eee;
+    }
     .divider:not(:empty)::before { margin-right: .5em; }
     .divider:not(:empty)::after { margin-left: .5em; }
-    .form-group { margin-bottom: 15px; text-align: left; }
-    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-    .btn-login { width: 100%; padding: 12px; font-size: 1em; font-weight: 600; color: var(--cor-branco); background-color: var(--cor-primaria); border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
-    .btn-login:hover { opacity: 0.9; }
-    .footer-links { margin-top: 20px; font-size: 0.9em; }
-    .footer-links a { color: var(--cor-primaria); text-decoration: none; }
-    .footer-links a:hover { text-decoration: underline; }
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--cor-branco);
+      background-color: var(--cor-primaria);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-login:hover {
+      opacity: 0.9;
+    }
+    .footer-links {
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+    .footer-links a {
+      color: var(--cor-primaria);
+      text-decoration: none;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +153,26 @@
     </div>
   </div>
   
-  <!-- Script de login modular -->
-  <script type="module" src="./login.js"></script>
+  <!-- Scripts do Firebase - ADICIONADOS -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Sua configuração do Firebase que você me enviou
+    const firebaseConfig = {
+      apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
+      authDomain: "prontipro-96d26.firebaseapp.com",
+      projectId: "prontipro-96d26",
+      storageBucket: "prontipro-96d26.firebasestorage.app",
+      messagingSenderId: "700778884814",
+      appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
+    };
+
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig );
+  </script>
+  
+  <!-- Seu script de login, carregado DEPOIS do Firebase -->
+  <script type="module" src="login.js"></script>
 </body>
 </html>
