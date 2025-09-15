@@ -6,6 +6,7 @@
   <title>Login - Pronti</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
   <style>
+    /* Seu CSS continua aqui, sem alterações */
     body {
       display: flex;
       justify-content: center;
@@ -152,6 +153,26 @@
     </div>
   </div>
   
+  <!-- Scripts do Firebase - ADICIONADOS -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Sua configuração do Firebase que você me enviou
+    const firebaseConfig = {
+      apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
+      authDomain: "prontipro-96d26.firebaseapp.com",
+      projectId: "prontipro-96d26",
+      storageBucket: "prontipro-96d26.firebasestorage.app",
+      messagingSenderId: "700778884814",
+      appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
+    };
+
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig );
+  </script>
+  
+  <!-- Seu script de login, carregado DEPOIS do Firebase -->
   <script type="module" src="login.js"></script>
 </body>
 </html>
