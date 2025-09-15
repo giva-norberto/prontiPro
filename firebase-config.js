@@ -8,13 +8,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebas
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-// ✅ Configuração do novo projeto (prontipro-96d26)
+// ✅ Configuração do projeto (prontipro-96d26)
 const firebaseConfig = {
     apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
     authDomain: "prontipro-96d26.firebaseapp.com",
     projectId: "prontipro-96d26",
-    // ⚠️ Ajuste importante: use o domínio padrão do bucket (.appspot.com)
-    storageBucket: "prontipro-96d26.appspot.com",
+    storageBucket: "prontipro-96d26.appspot.com", // ✅ formato correto do bucket
     messagingSenderId: "700778884814",
     appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
@@ -31,7 +30,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
-// Configurações adicionais
+// Configurações adicionais para login Google
 provider.setCustomParameters({ prompt: "select_account" });
 setPersistence(auth, browserLocalPersistence);
 
