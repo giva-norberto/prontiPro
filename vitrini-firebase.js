@@ -1,6 +1,6 @@
 // ======================================================================
-// ARQUIVO: firebase-config.js (VERSÃO ÚNICA, CENTRAL E VALIDADA)
-// Projeto: pronti-app-37c6e
+// ARQUIVO: vitrini-firebase.js (VERSÃO FINAL PARA O NOVO PROJETO)
+// Projeto: prontipro-96d26
 // ======================================================================
 
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -8,37 +8,35 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebas
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-// Configuração do seu projeto Firebase.
+// Configuração do novo projeto Firebase usando variáveis de ambiente (Vercel + Vite)
 const firebaseConfig = {
-  apiKey: "AIzaSyBx9-J6AfiCznrgOGGHiFS62JFzexjwcyI",
-  authDomain: "pronti-app-37c6e.firebaseapp.com",
-  projectId: "pronti-app-37c6e",
-  storageBucket: "pronti-app-37c6e.firebasestorage.app", // ✅ CORRIGIDO: Garante compatibilidade
-  messagingSenderId: "736700619274",
-  appId: "1:736700619274:web:557aa247905e56fa7e5df3"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Função Singleton: Garante que o app seja inicializado apenas uma vez.
+// Função Singleton: Garante que o app seja inicializado apenas uma vez
 const getFirebaseApp = () => {
   return getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 };
 
-// Inicializa e exporta tudo a partir da instância única
+// Inicializa instâncias a partir da instância única
 const app = getFirebaseApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
-// Configuração especial para sempre mostrar a tela de seleção de conta do Google.
+// Configuração especial para sempre mostrar a tela de seleção de conta do Google
 provider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// ✅ Conecta ao banco de dados com nome "pronti-app" para manter a consistência.
-const db = getFirestore(app, "pronti-app");
-
-// Define a persistência do login (mantém o usuário logado).
+// Define a persistência do login (mantém o usuário logado entre sessões)
 setPersistence(auth, browserLocalPersistence);
 
-// Exporta as instâncias para serem usadas em outros arquivos do projeto.
+// Exporta instâncias para uso em outros arquivos do projeto
 export { app, db, auth, storage, provider };
