@@ -9,7 +9,7 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-
 
 // Configuração do Firebase com o storageBucket CORRIGIDO.
 const firebaseConfig = {
-    apiKey: "AIzaSyAoMzmcLv9BvDPln-OUg3kB4jxy8HlxJQE",
+    apiKey: "AIzaSyBx9-J6AfiCznrgOGGHiFS62JFzexjwcyI",
     authDomain: "prontipro-96d26.firebaseapp.com",
     projectId: "prontipro-96d26",
     // ✅ CORREÇÃO APLICADA AQUI:
