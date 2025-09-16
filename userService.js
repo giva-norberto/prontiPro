@@ -20,7 +20,7 @@ const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 // Esta função centraliza toda a lógica de permissão e roteamento.
 // ======================================================================
 
-export async function verificarAcesso() {
+export async function verificarAcesso( ) {
     // Se já temos um perfil na sessão, retorna imediatamente.
     if (cachedSessionProfile) return cachedSessionProfile;
     // Se uma verificação já está em andamento, aguarda por ela para evitar chamadas duplicadas.
@@ -48,15 +48,27 @@ export async function verificarAcesso() {
 
             // 2. COLETAR DADOS (EMPRESAS)
             const empresas = await getEmpresasDoUsuario(user);
-            const empresaAtivaId = localStorage.getItem('empresaAtivaId');
+            let empresaAtivaId = localStorage.getItem('empresaAtivaId');
+
+            // ======================= INÍCIO DA ALTERAÇÃO CIRÚRGICA =======================
+            // Valida se a empresa ativa do localStorage é permitida para o usuário atual.
+            if (empresaAtivaId && !empresas.some(e => e.id === empresaAtivaId)) {
+                // Se não for permitida, invalida o ID e limpa o localStorage.
+                localStorage.removeItem('empresaAtivaId');
+                empresaAtivaId = null; 
+            }
+            // ======================== FIM DA ALTERAÇÃO CIRÚRGICA =========================
 
             // 3. LÓGICA DE ROTEAMENTO CENTRALIZADA (DECIDIR PARA ONDE IR)
             // Esta é a mudança mais importante. A decisão é tomada em um só lugar.
 
             // Cenário A: Usuário não tem exatamente UMA empresa E não está na tela de seleção.
             if (empresas.length !== 1 && currentPage !== 'selecionar-empresa.html') {
-                window.location.replace('selecionar-empresa.html');
-                return reject(new Error("Seleção de empresa necessária."));
+                // Adiciona uma verificação para não redirecionar se já houver uma empresa ativa válida
+                if (!empresaAtivaId) {
+                    window.location.replace('selecionar-empresa.html');
+                    return reject(new Error("Seleção de empresa necessária."));
+                }
             }
 
             // Cenário B: Usuário tem exatamente UMA empresa, MAS está na tela de seleção.
