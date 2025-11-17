@@ -1,8 +1,3 @@
-// ======================================================================
-// ARQUIVO: firebase-config.js (CDN • PRONTO PARA PRODUÇÃO)
-// Projeto: ProntiPro Pet / Clone do Pronti
-// ======================================================================
-
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -15,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBxGAvU6lUWvmx-C6a98DTOdA3bfywuy7A",
   authDomain: "prontipro-96d26.firebaseapp.com",
   projectId: "prontipro-96d26",
-  storageBucket: "prontipro-96d26.firebasestorage.app",
+  storageBucket: "prontipro-96d26.appspot.com", // Corrigido!
   messagingSenderId: "700778884814",
   appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
@@ -23,16 +18,17 @@ const firebaseConfig = {
 // ===============================
 // ⚡ EVITA ERRO "App already exists"
 // ===============================
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // ===============================
-// 🔑 GOOGLE AUTH
+// 🔑 GOOGLE AUTH CORRIGIDO
 // ===============================
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// IMPORTANTE: substitua SEU_CLIENT_ID_AQUI pelo real se usar OAuth2
+// Troque pelo client_id gerado no Console Google Cloud!
 provider.setCustomParameters({
+  client_id: "SEU_CLIENT_ID_DE_OAUTH.apps.googleusercontent.com",
   prompt: "select_account"
 });
 
@@ -40,12 +36,8 @@ provider.setCustomParameters({
 setPersistence(auth, browserLocalPersistence);
 
 // ===============================
-// 📦 FIRESTORE + STORAGE
-// ===============================
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ===============================
-// 📤 EXPORT
-// ===============================
+// Exporta tudo
 export { app, auth, db, storage, provider };
