@@ -17,17 +17,24 @@ const firebaseConfig = {
   appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
 
+// Evita erro "Firebase App named '[DEFAULT]' already exists"
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
+// ===============================
+// 🔑 GOOGLE AUTH + CLIENT ID
+// ===============================
+const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
 provider.setCustomParameters({
+  client_id: "700778884814-krc5p10jhgaeal9tf0hll8v73u837o1e.apps.googleusercontent.com", // <-- coloque o seu aqui
   prompt: "select_account"
 });
 
+// ===============================
 setPersistence(auth, browserLocalPersistence);
 
-export { app, auth, db, storage, provider };
+const db = getFirestore(app);
+const storage = getStorage(app);
 
+export { app, auth, db, storage, provider };
