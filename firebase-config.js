@@ -23,16 +23,16 @@ const firebaseConfig = {
 // ===============================
 // ⚡ EVITA ERRO "App already exists"
 // ===============================
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // ===============================
-// 🔑 GOOGLE AUTH CORRIGIDO
+// 🔑 GOOGLE AUTH
 // ===============================
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+// IMPORTANTE: substitua SEU_CLIENT_ID_AQUI pelo real se usar OAuth2
 provider.setCustomParameters({
-  client_id: "700778884814-SEU_CLIENT_ID_AQUI.apps.googleusercontent.com",
   prompt: "select_account"
 });
 
@@ -40,14 +40,12 @@ provider.setCustomParameters({
 setPersistence(auth, browserLocalPersistence);
 
 // ===============================
+// 📦 FIRESTORE + STORAGE
+// ===============================
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Exporta tudo
-export { app, auth, db, storage, provider };
-
-
-const db = getFirestore(app);
-const storage = getStorage(app);
-
+// ===============================
+// 📤 EXPORT
+// ===============================
 export { app, auth, db, storage, provider };
