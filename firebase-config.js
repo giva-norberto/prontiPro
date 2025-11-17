@@ -10,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBxGAvU6lUWvmx-C6a98DTOdA3bfywuy7A",
   authDomain: "prontipro-96d26.firebaseapp.com",
   projectId: "prontipro-96d26",
-  storageBucket: "prontipro-96d26.appspot.com", // Corrigido!
+  storageBucket: "prontipro-96d26.appspot.com",
   messagingSenderId: "700778884814",
   appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
@@ -26,9 +26,9 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Troque pelo client_id gerado no Console Google Cloud!
+// SEU CLIENT_ID AGORA ESTÁ CORRETO!
 provider.setCustomParameters({
-  client_id: "SEU_CLIENT_ID_DE_OAUTH.apps.googleusercontent.com",
+  client_id: "700778884814-krc5p10jhgaeal9tf0hll8v73u837o1e.apps.googleusercontent.com",
   prompt: "select_account"
 });
 
