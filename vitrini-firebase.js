@@ -1,6 +1,8 @@
 // ======================================================================
-// ARQUIVO: vitrini-firebase.js (VERSÃO FINAL PARA O NOVO PROJETO)
+// ARQUIVO: vitrini-firebase.js (VERSÃO CORRIGIDA PARA O PROJETO PETS)
 // Projeto: prontipro-96d26
+// Esta versão usa as chaves "hardcoded" (escritas direto)
+// para evitar o erro "import.meta.env is undefined".
 // ======================================================================
 
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -8,35 +10,36 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebas
 import { getAuth, setPersistence, browserLocalPersistence, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-// Configuração do novo projeto Firebase usando variáveis de ambiente (Vercel + Vite)
+// Configuração do Firebase para o projeto prontipro-96d26 (Pets)
+// Estas são as chaves que você me passou e que estão corretas.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyBxGAvU6lUWvmx-C6a98DTOdA3bfywuy7A",
+  authDomain: "prontipro-96d26.firebaseapp.com",
+  projectId: "prontipro-96d26",
+  storageBucket: "prontipro-96d26.appspot.com",
+  messagingSenderId: "700778884814",
+  appId: "1:700778884814:web:c4dc06a048e25960f7aa9f"
 };
 
-// Função Singleton: Garante que o app seja inicializado apenas uma vez
-const getFirebaseApp = () => {
-  return getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-};
+// Inicialização Singleton do App
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Inicializa instâncias a partir da instância única
-const app = getFirebaseApp();
+// Instâncias dos serviços Firebase
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
-// Configuração especial para sempre mostrar a tela de seleção de conta do Google
+// ✅ CORREÇÃO IMPORTANTE:
+// Adiciona o Client ID do Google que consertamos mais cedo.
+// Isso evita o erro 401 (deleted_client) no login com Google.
 provider.setCustomParameters({
-  prompt: 'select_account'
+  client_id: "700778884814-krc5p10jhgaeal9tf0hll8v73u837o1e.apps.googleusercontent.com",
+  prompt: "select_account"
 });
 
-// Define a persistência do login (mantém o usuário logado entre sessões)
+// Define a persistência do login
 setPersistence(auth, browserLocalPersistence);
 
-// Exporta instâncias para uso em outros arquivos do projeto
-export { app, db, auth, storage, provider };
+// Exporta as instâncias para o restante do seu app
+export { app, auth, db, storage, provider };
