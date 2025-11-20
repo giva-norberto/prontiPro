@@ -4,21 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Novo Serviço</title>
-
-  <!-- CSS principal -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Google Font moderna -->
+  <!-- Google Font mais moderna -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
-      background: linear-gradient(135deg, #eef1f7 0%, #f8f9fc 100%);
+      background: linear-gradient(135deg, #4f7df7 0%, #6ea8ff 50%, #8fc9ff 100%);
       font-family: 'Inter', sans-serif;
       color: #1a1a2e;
     }
 
-    /* ===== Layout Geral ===== */
+    /* ===== Layout ===== */
     .main-content {
       margin-left: 240px;
       padding: 40px;
@@ -36,6 +34,7 @@
       padding: 36px 34px;
       width: 100%;
       max-width: 480px;
+
       box-shadow: 0 8px 28px rgba(40,40,80,0.12);
       animation: fadeUp 0.35s ease-out;
     }
@@ -54,12 +53,12 @@
       letter-spacing: -0.5px;
     }
 
-    /* ===== Inputs ===== */
+    /* ===== Inputs Modernos ===== */
     .form-group {
       margin-bottom: 22px;
+      width: 100%;
       display: flex;
       flex-direction: column;
-      width: 100%;
     }
 
     .form-group label {
@@ -78,7 +77,6 @@
       font-size: 1rem;
       transition: all 0.25s;
       outline: none;
-      resize: none;
     }
 
     .form-group input:focus,
@@ -127,18 +125,13 @@
 </head>
 
 <body>
-
-  <!-- Sidebar -->
   <div id="sidebar-placeholder"></div>
 
-  <!-- Conteúdo Principal -->
   <div class="main-content">
     <div class="form-card">
-
       <h1>Novo Serviço</h1>
 
       <form id="form-servico">
-
         <div class="form-group">
           <label for="nome-servico">Nome do Serviço</label>
           <input id="nome-servico" name="nome-servico" type="text" required />
@@ -166,16 +159,15 @@
 
         <button type="submit" class="btn-submit">Salvar Serviço</button>
       </form>
-
     </div>
   </div>
 
-  <!-- Scripts Originais -->
+  <!-- Scripts originais (sem alterar nada) -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="novo-servico.js"></script>
 
   <script>
-    /* Carregar sidebar dinamicamente */
+    /* Mantém seu carregamento padrão do menu */
     document.addEventListener("DOMContentLoaded", function() {
       fetch('menu-lateral.html')
         .then(res => res.text())
@@ -184,6 +176,5 @@
         });
     });
   </script>
-
 </body>
 </html>
