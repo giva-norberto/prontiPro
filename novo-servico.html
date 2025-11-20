@@ -6,21 +6,23 @@
   <title>Novo Serviço</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Google Font mais moderna -->
+  <!-- Google Font moderna -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    /* ===== Fundo igual ao INDEX ===== */
     body {
-      background: linear-gradient(135deg, #4f7df7 0%, #6ea8ff 50%, #8fc9ff 100%);
+      margin: 0;
       font-family: 'Inter', sans-serif;
-      color: #1a1a2e;
+      background: linear-gradient(135deg, #4f46e5 0%, #222664 100%);
+      color: #ffffff;
+      min-height: 100vh;
     }
 
     /* ===== Layout ===== */
     .main-content {
       margin-left: 240px;
       padding: 40px;
-      min-height: 100vh;
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -28,14 +30,16 @@
 
     /* ===== Card Moderno ===== */
     .form-card {
-      background: #ffffffcc;
-      backdrop-filter: blur(14px);
+      background: #ffffff1f; /* transparente com leve branco */
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
       border-radius: 20px;
-      padding: 36px 34px;
+      padding: 34px 32px;
       width: 100%;
       max-width: 480px;
 
-      box-shadow: 0 8px 28px rgba(40,40,80,0.12);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
       animation: fadeUp 0.35s ease-out;
     }
 
@@ -48,42 +52,43 @@
       font-size: 2.1rem;
       font-weight: 700;
       text-align: center;
-      color: #111827;
+      color: #ffffff;
       margin-bottom: 28px;
-      letter-spacing: -0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     /* ===== Inputs Modernos ===== */
     .form-group {
       margin-bottom: 22px;
-      width: 100%;
       display: flex;
       flex-direction: column;
+      width: 100%;
     }
 
     .form-group label {
       font-size: 1rem;
       font-weight: 600;
       margin-bottom: 6px;
-      color: #374151;
+      color: #e0e7ff;
     }
 
     .form-group input,
     .form-group textarea {
       padding: 14px;
-      border: 1.7px solid #d2d6db;
-      background: #f9fafb;
+      border: 1.7px solid #cfd1ff33;
+      background: #f9f9ffdd;
       border-radius: 10px;
       font-size: 1rem;
-      transition: all 0.25s;
       outline: none;
+      transition: 0.25s;
+      color: #1a1a2e;
     }
 
     .form-group input:focus,
     .form-group textarea:focus {
       border-color: #6366f1;
-      background: #f3f4ff;
-      box-shadow: 0 0 0 3px #6366f122;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px #6366f144;
     }
 
     /* ===== Botão ===== */
@@ -99,13 +104,13 @@
       cursor: pointer;
       margin-top: 12px;
       transition: 0.25s;
-      box-shadow: 0 8px 20px rgba(99,102,241,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
     }
 
     .btn-submit:hover {
       background: linear-gradient(135deg, #4f46e5, #4338ca);
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(99,102,241,0.35);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45);
     }
 
     /* ===== Responsividade ===== */
@@ -162,12 +167,12 @@
     </div>
   </div>
 
-  <!-- Scripts originais (sem alterar nada) -->
+  <!-- Scripts originais -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="novo-servico.js"></script>
 
+  <!-- Menu lateral -->
   <script>
-    /* Mantém seu carregamento padrão do menu */
     document.addEventListener("DOMContentLoaded", function() {
       fetch('menu-lateral.html')
         .then(res => res.text())
@@ -178,3 +183,4 @@
   </script>
 </body>
 </html>
+
