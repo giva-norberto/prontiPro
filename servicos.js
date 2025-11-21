@@ -22,7 +22,7 @@ const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 // --- Estado ---
 let empresaId = null;
 let isDono = false;
-let tipoEmpresa = null; // ✅ ADIÇÃO NECESSÁRIA
+let tipoEmpresa = null; // ✅ ADIÇÃO NECESSÁRIA PARA O BOTÃO
 const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 function getEmpresaIdAtiva() {
@@ -46,7 +46,7 @@ onAuthStateChanged(auth, async (user) => {
     const empresaSnap = await getDoc(empresaRef);
     if (empresaSnap.exists()) {
       const empresaData = empresaSnap.data(); 
-      tipoEmpresa = empresaData.tipoEmpresa; // ✅ CARREGAMENTO NECESSÁRIO
+      tipoEmpresa = empresaData.tipoEmpresa; // ✅ CORREÇÃO AQUI: Carrega o tipo da empresa
       isDono = (empresaData.donoId === user.uid) || (user.uid === adminUID);
     } else {
       isDono = (user.uid === adminUID);
@@ -172,7 +172,7 @@ function renderServicoCard(servico, isPet) {
     let precosPorPorteHtml = "";
     if (Array.isArray(servico.precos) && servico.precos.length > 0) {
       
-      // CORREÇÃO: Usa o primeiro porte (pequeno) para o resumo principal
+      // CORREÇÃO DA VISUALIZAÇÃO: Usa o primeiro porte (pequeno) para o resumo principal
       precoBase = servico.precos[0].preco || 0;
       duracaoBase = servico.precos[0].duracao || 0;
 
@@ -282,7 +282,7 @@ if (btnAddServico) {
     if (!isDono) {
       showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
     } else {
-      // Redirecionamento dinâmico baseado no tipo da empresa
+      // ✅ CORREÇÃO AQUI: Redirecionamento dinâmico baseado no tipo da empresa
       if (tipoEmpresa === 'pets') {
         window.location.href = 'novo-servico-pet.html';
       } else {
