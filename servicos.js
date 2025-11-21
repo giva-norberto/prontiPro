@@ -22,7 +22,7 @@ const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 // --- Estado ---
 let empresaId = null;
 let isDono = false;
-let tipoEmpresa = null; // ADIÇÃO: Variável para armazenar o tipo de empresa.
+let tipoEmpresa = null; // ✅ ADIÇÃO: Variável para armazenar o tipo de empresa.
 const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 function getEmpresaIdAtiva() {
@@ -45,8 +45,8 @@ onAuthStateChanged(auth, async (user) => {
     const empresaRef = doc(db, "empresarios", empresaId);
     const empresaSnap = await getDoc(empresaRef);
     if (empresaSnap.exists()) {
-      const empresaData = empresaSnap.data(); // MODIFICAÇÃO: Captura dados
-      tipoEmpresa = empresaData.tipoEmpresa; // MODIFICAÇÃO: Armazena o tipo
+      const empresaData = empresaSnap.data(); // ✅ MODIFICAÇÃO: Captura dados
+      tipoEmpresa = empresaData.tipoEmpresa; // ✅ MODIFICAÇÃO: Armazena o tipo
       isDono = (empresaData.donoId === user.uid) || (user.uid === adminUID);
     } else {
       isDono = (user.uid === adminUID);
@@ -162,8 +162,9 @@ function renderServicoCard(servico, isPet) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
   
-  let precoBase = servico.preco; // Usa preco simples para serviços normais
-  let duracaoBase = servico.duracao || 0; // Usa duracao simples para serviços normais
+  // Assume o preço e duração padrão (para serviços Salão/Normal)
+  let precoBase = servico.preco; 
+  let duracaoBase = servico.duracao || 0; 
 
   let petInfoHtml = "";
   if (isPet) {
@@ -171,10 +172,11 @@ function renderServicoCard(servico, isPet) {
     let precosPorPorteHtml = "";
     if (Array.isArray(servico.precos) && servico.precos.length > 0) {
       
-      // Para exibir o preço e duração principal, usa-se o primeiro porte (ex: pequeno)
+      // ✅ CORREÇÃO: Usa o primeiro porte (pequeno) para o resumo principal
       precoBase = servico.precos[0].preco;
       duracaoBase = servico.precos[0].duracao || 0;
 
+      // Monta o HTML detalhado por porte (que aparece na parte de baixo do card)
       precosPorPorteHtml = `
         <div class="servico-preco-por-porte">
           ${servico.precos.map(p => 
@@ -188,7 +190,7 @@ function renderServicoCard(servico, isPet) {
     petInfoHtml = `<div class="servico-pet-info">${precosPorPorteHtml}</div>`;
   }
   
-  // Renderiza o preço e duração (simples para normal, ou base para pet)
+  // Renderiza o preço e duração, usando a "Base" definida acima
   const precoFormatado = formatarPreco(precoBase);
   const duracaoFormatada = duracaoBase;
 
@@ -209,10 +211,9 @@ function renderServicoCard(servico, isPet) {
           <span class="servico-preco">${precoFormatado}</span>
           <span class="servico-duracao"> • ${duracaoFormatada} min</span>
         </div>
-        ${acoes}
-      </div>
-      ${petInfoHtml}
+        ${petInfoHtml}
     </div>
+  </div>
   `;
 }
 
@@ -280,7 +281,7 @@ if (btnAddServico) {
     if (!isDono) {
       showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
     } else {
-      // MODIFICAÇÃO: Redirecionamento dinâmico baseado no tipo da empresa
+      // ✅ MODIFICAÇÃO: Redirecionamento dinâmico baseado no tipo da empresa
       if (tipoEmpresa === 'pets') {
         window.location.href = 'novo-servico-pet.html';
       } else {
