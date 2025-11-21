@@ -124,6 +124,10 @@ function preencherFormulario(servico) {
             document.getElementById('preco-grande').value = grande.preco || '';
             document.getElementById('duracao-grande').value = grande.duracao || '';
         }
+
+        // Categoria opcional
+        const categoriaInput = document.getElementById('categoria-servico');
+        if (categoriaInput) categoriaInput.value = servico.categoria || '';
     } else {
         document.getElementById('nome-servico').value = servico.nome || '';
         document.getElementById('descricao-servico').value = servico.descricao || '';
@@ -177,6 +181,11 @@ function montarFormularioPorTipo() {
             <div class="form-group">
                 <label for="duracao-grande">Duração (minutos - Grande)</label>
                 <input type="number" id="duracao-grande" step="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="categoria-servico">Categoria (opcional)</label>
+                <input type="text" id="categoria-servico">
             </div>
         `;
     } else {
@@ -321,7 +330,13 @@ async function handleFormSubmit(e) {
                 ]
             };
 
-            // Validação completa
+            // Categoria opcional
+            const categoriaInput = document.getElementById('categoria-servico');
+            if (categoriaInput && categoriaInput.value.trim() !== '') {
+                dadosServico.categoria = categoriaInput.value.trim();
+            }
+
+            // Validação obrigatória
             if (!dadosServico.nome || dadosServico.precos.some(p => isNaN(p.preco) || isNaN(p.duracao))) {
                 throw new Error("Preencha todos os campos obrigatórios corretamente.");
             }
@@ -334,7 +349,9 @@ async function handleFormSubmit(e) {
                 duracao: parseInt(document.getElementById('duracao-servico').value, 10),
                 visivelNaVitrine: true
             };
-            if (categoriaInput) dadosServico.categoria = categoriaInput.value.trim();
+            if (categoriaInput && categoriaInput.value.trim() !== '') {
+                dadosServico.categoria = categoriaInput.value.trim();
+            }
             if (!dadosServico.nome || isNaN(dadosServico.preco) || isNaN(dadosServico.duracao)) {
                 throw new Error("Preencha todos os campos obrigatórios corretamente.");
             }
