@@ -154,44 +154,48 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
-// Corrigido: Layout PET detecta collection ou campo tipo
+// Layout PET: nome, descrição, preços por porte. NÃO mostra valor no topo.
 function renderServicoCard(servico, isPetSection) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
-
-  // Garante layout PET se vier da collection servicos_pet ou se tipo for pets
+  const precosPorPorte = Array.isArray(servico.precos) ? servico.precos : [];
   const isPet = isPetSection || servico.tipo === 'pets';
 
   if (isPet) {
-    let precosPorPorteHtml = "";
-    if (Array.isArray(servico.precos) && servico.precos.length > 0) {
-      precosPorPorteHtml = `
-        <div class="servico-preco-por-porte" style="margin-top: 10px;">
-          ${servico.precos.map(p => 
-            `<div style="margin-bottom:5px">
-              <strong>${sanitizeHTML(p.porte)}:</strong>
-              ${formatarPreco(p.preco)}
-              ${p.duracao ? ` • ${p.duracao} min` : ""}
-            </div>`
-          ).join("")}
-        </div>`;
-    }
+    // Layout PET SEM valor no cabeçalho
     return `
-    <div class="servico-card servico-card-pet" data-id="${servico.id}" data-type="pet">
-      <div class="servico-header">
-        <h3 class="servico-titulo">${nome}</h3>
+    <div class="servico-card servico-card-pet" data-id="${servico.id}" data-type="pet" style="border:2px solid #38bdf8;border-radius:16px;box-shadow:0 1px 12px #0002;background:#fff;margin-bottom:18px;padding:22px;max-width:360px;">
+      <div style="font-size:1.15rem;font-weight:700;color:#444;margin-bottom:6px;">
+        Serviços <span style="color:#38bdf8">PET</span>
       </div>
-      <p class="servico-descricao">${desc}</p>
-      ${precosPorPorteHtml}
-      <div class="servico-footer" style="margin-top:10px;">
-        <div>
-          ${servico.visivelNaVitrine ? "<span class='badge'>Exibido na vitrine</span>" : ""}
-        </div>
-        ${isDono ? `
-          <div class="servico-acoes">
-            <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="pet">Editar</button>
-            <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="pet">Excluir</button>
-          </div>` : ""}
+      <div class="servico-header" style="display:flex;align-items:center;">
+        <h3 class="servico-titulo" style="font-size:1.28em;font-weight:700;color:#222;margin:0;flex:1;">
+          ${nome}
+        </h3>
+      </div>
+      <p class="servico-descricao" style="color:#888;font-size:1em;margin:7px 0 12px 0;padding-bottom:8px;">
+        ${desc}
+      </p>
+      <hr style="margin-bottom:12px; margin-top:0;border:0;border-bottom:1px dashed #a0aec0;">
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:600;color:#222;">Preços por Porte:</div>
+        ${precosPorPorte.length > 0 ? 
+            precosPorPorte.map(p => `<div style="font-size:1.03em;margin:3px 0;">
+              <span style="font-weight:500;">${sanitizeHTML(p.porte)}:</span> 
+              ${formatarPreco(p.preco)} ${p.duracao ? `• ${p.duracao} min` : ""}
+            </div>`).join("")
+          : `<div style="color:#486;">(Sem preços por porte)</div>`
+        }
+      </div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:15px;">
+        <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="pet"
+          style="background:#38bdf8;color:#fff;padding:9px 28px;font-weight:600;border:none;border-radius:6px;font-size:1.08em;box-shadow:0 2px 8px #0001;cursor:pointer;">
+          Editar
+        </button>
+        <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="pet"
+          style="background:#ef4444;color:#fff;padding:9px 28px;font-weight:600;border:none;border-radius:6px;font-size:1.08em;box-shadow:0 2px 8px #0001;cursor:pointer;">
+          Excluir
+        </button>
       </div>
     </div>
     `;
@@ -201,20 +205,20 @@ function renderServicoCard(servico, isPetSection) {
   const preco = formatarPreco(servico.preco);
   const duracao = servico.duracao ? (`${servico.duracao} min`) : "";
   return `
-    <div class="servico-card servico-card-normal" data-id="${servico.id}" data-type="normal">
+    <div class="servico-card servico-card-normal" data-id="${servico.id}" data-type="normal" style="background:#fff;padding:20px;border-radius:10px;margin-bottom:15px;box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
       <div class="servico-header">
-        <h3 class="servico-titulo">${nome}</h3>
+        <h3 class="servico-titulo" style="font-size:1.21em;">${nome}</h3>
       </div>
-      <p class="servico-descricao">${desc}</p>
-      <div class="servico-footer">
+      <p class="servico-descricao" style="color:#666;margin-bottom:8px;">${desc}</p>
+      <div class="servico-footer" style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <span class="servico-preco">${preco}</span>
-          ${duracao ? `<span class="servico-duracao"> • ${duracao}</span>` : ""}
+          <span class="servico-preco" style="font-size:1.18em;color:#28a745;font-weight:bold;">${preco}</span>
+          ${duracao ? `<span class="servico-duracao" style="color:#888;"> • ${duracao}</span>` : ""}
         </div>
         ${isDono ? `
-          <div class="servico-acoes">
-            <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="normal">Editar</button>
-            <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="normal">Excluir</button>
+          <div class="servico-acoes" style="display:flex;gap:10px;">
+            <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="normal" style="background:#38bdf8;color:#fff;font-weight:600;border:none;border-radius:5px;padding:7px 17px;cursor:pointer;">Editar</button>
+            <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="normal" style="background:#ef4444;color:#fff;font-weight:600;border:none;border-radius:5px;padding:7px 17px;cursor:pointer;">Excluir</button>
           </div>` : ""}
       </div>
     </div>
