@@ -154,7 +154,7 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
-// CORRIGIDO PARA USAR O ARRAY precos QUANDO PET
+// CORRIGIDO: Exibe info PET com array precos (porte, preço, duração)
 function renderServicoCard(servico, isPet) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
@@ -163,27 +163,20 @@ function renderServicoCard(servico, isPet) {
 
   let petInfoHtml = "";
   if (isPet) {
-    // Exibe precos por porte/duracao se houver array "precos"
+    // Exibe precos/duracao por porte do array servico.precos
     let precosPorPorteHtml = "";
     if (Array.isArray(servico.precos) && servico.precos.length > 0) {
       precosPorPorteHtml = `
         <div class="servico-preco-por-porte">
-          ${servico.precos.map(p =>
-            `<div style="margin-bottom:3px">
-              <strong>${sanitizeHTML(p.porte)}:</strong> 
-              ${formatarPreco(p.preco)}
+          ${servico.precos.map(p => 
+            `<div>
+              <strong>${sanitizeHTML(p.porte)}:</strong> ${formatarPreco(p.preco)}
               ${p.duracao ? ` • ${p.duracao} min` : ""}
             </div>`
           ).join("")}
-        </div>
-      `;
+        </div>`;
     }
-
-    petInfoHtml = `
-      <div class="servico-pet-info">
-        ${precosPorPorteHtml}
-      </div>
-    `;
+    petInfoHtml = `<div class="servico-pet-info">${precosPorPorteHtml}</div>`;
   }
 
   const acoes = isDono ? `
