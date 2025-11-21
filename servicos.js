@@ -153,33 +153,40 @@ function renderizarTudo(servicos, servicosPet) {
   listaServicosDiv.innerHTML = htmlPets + htmlNormais;
 }
 
-// --- Render cartão de serviço ---
+// --- Render cartão de serviço (dinâmico com as informações do serviço cadastrado) ---
 function renderServicoCard(servico, isPet) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
   const preco = formatarPreco(servico.preco);
-  const duracao = servico.duracao || 0;
+  const duracao = servico.duracao ? `${servico.duracao} min` : "";
 
   let petInfoHtml = "";
   if (isPet) {
-    const tipoAnimal = servico.tipoAnimal ? sanitizeHTML(servico.tipoAnimal) : "—";
-    const porte = Array.isArray(servico.portes) ? servico.portes.join(", ") : (servico.porte || "");
-    const tempoExtra = servico.tempoExtraOpcional ? ` • Extra: ${servico.tempoExtraOpcional} min` : "";
-    let precoPorPorteHtml = "";
-    if (servico.precoPequeno || servico.precoMedio || servico.precoGrande || servico.precoGigante) {
-      const parts = [];
-      if (servico.precoPequeno) parts.push(`P: ${formatarPreco(servico.precoPequeno)}`);
-      if (servico.precoMedio) parts.push(`M: ${formatarPreco(servico.precoMedio)}`);
-      if (servico.precoGrande) parts.push(`G: ${formatarPreco(servico.precoGrande)}`);
-      if (servico.precoGigante) parts.push(`GG: ${formatarPreco(servico.precoGigante)}`);
-      precoPorPorteHtml = `<div class="servico-preco-por-porte">${parts.join(" • ")}</div>`;
-    }
+    let tagsParts = [];
+    if (servico.tipoAnimal) tagsParts.push(sanitizeHTML(servico.tipoAnimal));
+    if (Array.isArray(servico.portes) && servico.portes.length > 0)
+      tagsParts.push(sanitizeHTML(servico.portes.join(", ")));
+    else if (servico.porte) tagsParts.push(sanitizeHTML(servico.porte));
+    const tagsLine = tagsParts.length ? `🐾 ${tagsParts.join(" • ")}` : "";
+
+    let precoPorPorteParts = [];
+    if (servico.precoPequeno) precoPorPorteParts.push(`P: ${formatarPreco(servico.precoPequeno)}`);
+    if (servico.precoMedio) precoPorPorteParts.push(`M: ${formatarPreco(servico.precoMedio)}`);
+    if (servico.precoGrande) precoPorPorteParts.push(`G: ${formatarPreco(servico.precoGrande)}`);
+    if (servico.precoGigante) precoPorPorteParts.push(`GG: ${formatarPreco(servico.precoGigante)}`);
+    const precoPorPorteHtml = precoPorPorteParts.length ? `<div class="servico-preco-por-porte">${precoPorPorteParts.join(" • ")}</div>` : "";
+
+    let tempoExtraHtml = "";
+    if (servico.tempoExtraOpcional) tempoExtraHtml = ` • Extra: ${servico.tempoExtraOpcional} min`;
+
+    let duracaoHtml = (duracao || servico.tempoExtraOpcional) ?
+      `<div class="servico-duracao-pet">${duracao}${tempoExtraHtml}</div>` : "";
 
     petInfoHtml = `
       <div class="servico-pet-info">
-        <div class="servico-tags">🐾 ${tipoAnimal}${porte ? " • " + sanitizeHTML(porte) : ""}</div>
+        ${tagsLine ? `<div class="servico-tags">${tagsLine}</div>` : ""}
         ${precoPorPorteHtml}
-        <div class="servico-duracao-pet">${duracao} min ${tempoExtra}</div>
+        ${duracaoHtml}
       </div>
     `;
   }
@@ -195,11 +202,11 @@ function renderServicoCard(servico, isPet) {
       <div class="servico-header">
         <h3 class="servico-titulo">${nome}</h3>
       </div>
-      <p class="servico-descricao">${desc}</p>
+      ${desc ? `<p class="servico-descricao">${desc}</p>` : ""}
       <div class="servico-footer">
         <div>
           <span class="servico-preco">${preco}</span>
-          <span class="servico-duracao"> • ${duracao} min</span>
+          ${duracao ? `<span class="servico-duracao"> • ${duracao}</span>` : ""}
         </div>
         ${acoes}
       </div>
