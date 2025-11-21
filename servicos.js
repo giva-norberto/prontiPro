@@ -127,7 +127,7 @@ function renderServicoCard(servico, isPet) {
   let showFooterDetails = true; // Exibir preço/duração no rodapé (padrão Salão)
   
   if (isPet) {
-    // SE FOR PET: Novo Layout
+    // SE FOR PET: NOVO LAYOUT
     
     if (Array.isArray(servico.precos) && servico.precos.length > 0) {
       
@@ -151,8 +151,9 @@ function renderServicoCard(servico, isPet) {
       petInfoHtml = precosPorPorteHtml; // O bloco extra PET é preenchido
     } 
   }
+    // SE FOR SALÃO (isPet=false): LAYOUT ANTIGO (showFooterDetails permanece true)
   
-  // Monta o bloco de Preço/Duração para o rodapé (só se showFooterDetails for true, ou seja, Salão)
+  // Monta o bloco de Preço/Duração para o rodapé (só se showFooterDetails for true)
   const precoFormatado = formatarPreco(precoBase);
   const duracaoFormatada = duracaoBase;
 
@@ -234,7 +235,7 @@ if (listaServicosDiv) {
         if (!id) return;
 
         if (target.classList.contains('btn-editar')) {
-            // Redireciona para a tela de edição correta (novo-servico-pet.html ou novo-servico.html)
+            // Redireciona para a tela de edição correta 
             if (tipo === 'pet') {
                 window.location.href = `novo-servico-pet.html?id=${id}`;
             } else {
