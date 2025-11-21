@@ -22,7 +22,7 @@ const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 // --- Estado ---
 let empresaId = null;
 let isDono = false;
-let tipoEmpresa = null; // ✅ ADIÇÃO NECESSÁRIA PARA O BOTÃO
+let tipoEmpresa = null; // Mantido, mas não usado para redirecionamento do botão Add
 const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 function getEmpresaIdAtiva() {
@@ -46,7 +46,7 @@ onAuthStateChanged(auth, async (user) => {
     const empresaSnap = await getDoc(empresaRef);
     if (empresaSnap.exists()) {
       const empresaData = empresaSnap.data(); 
-      tipoEmpresa = empresaData.tipoEmpresa; // ✅ CORREÇÃO AQUI: Carrega o tipo da empresa
+      tipoEmpresa = empresaData.tipoEmpresa; 
       isDono = (empresaData.donoId === user.uid) || (user.uid === adminUID);
     } else {
       isDono = (user.uid === adminUID);
@@ -204,15 +204,15 @@ function renderServicoCard(servico, isPet) {
     <div class="servico-card" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">
       <div class="servico-header">
         <h3 class="servico-titulo">${nome}</h3>
+        <div class="servico-footer">
+          <div>
+            <span class="servico-preco">${precoFormatado}</span>
+            <span class="servico-duracao"> • ${duracaoFormatada} min</span>
+          </div>
+          ${acoes}
+        </div>
       </div>
       <p class="servico-descricao">${desc}</p>
-      <div class="servico-footer">
-        <div>
-          <span class="servico-preco">${precoFormatado}</span>
-          <span class="servico-duracao"> • ${duracaoFormatada} min</span>
-        </div>
-        ${acoes}
-      </div>
       ${petInfoHtml}
     </div>
   `;
@@ -282,12 +282,8 @@ if (btnAddServico) {
     if (!isDono) {
       showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
     } else {
-      // ✅ CORREÇÃO AQUI: Redirecionamento dinâmico baseado no tipo da empresa
-      if (tipoEmpresa === 'pets') {
-        window.location.href = 'novo-servico-pet.html';
-      } else {
-        window.location.href = 'novo-servico.html';
-      }
+      // ✅ CORREÇÃO AQUI: Direciona sempre para novo-servico.html
+      window.location.href = 'novo-servico.html';
     }
   });
 }
