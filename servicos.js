@@ -154,13 +154,15 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
-// Dois layouts: PET (exibe por porte/preço/duração) e NORMAL (preço fixo/duração comum)
-function renderServicoCard(servico, isPet) {
+// Corrigido: Layout PET detecta collection ou campo tipo
+function renderServicoCard(servico, isPetSection) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
 
+  // Garante layout PET se vier da collection servicos_pet ou se tipo for pets
+  const isPet = isPetSection || servico.tipo === 'pets';
+
   if (isPet) {
-    // Layout PET
     let precosPorPorteHtml = "";
     if (Array.isArray(servico.precos) && servico.precos.length > 0) {
       precosPorPorteHtml = `
@@ -174,7 +176,6 @@ function renderServicoCard(servico, isPet) {
           ).join("")}
         </div>`;
     }
-
     return `
     <div class="servico-card servico-card-pet" data-id="${servico.id}" data-type="pet">
       <div class="servico-header">
