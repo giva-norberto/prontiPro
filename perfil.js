@@ -14,9 +14,46 @@ import {
 import { uploadFile } from './uploadService.js';
 import { app, db, auth, storage } from "./firebase-config.js";
 
-// Função fake do modal para garantir funcionamento
+// --- Adicione esse bloco HTML no final do <body> da sua página: ---
+// <div id="modal-confirmacao-pronti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(24,27,124,.35);align-items:center;justify-content:center;">
+//   <div style="background:#4f46e5;color:#fff;padding:30px 30px 22px 30px;border-radius:18px;max-width:340px;box-shadow:0 2px 20px #0005;margin:auto;position:relative;">
+//     <div id="modal-confirmacao-pronti-pergunta" style="font-size:1.16em;font-weight:500;text-align:center;margin-bottom:13px;"></div>
+//     <div style="display:flex;justify-content:center;gap:15px;padding-top:8px;">
+//       <button id="modal-confirmacao-pronti-ok" style="background:#2563eb;color:#fff;font-weight:600;padding:9px 30px;border-radius:7px;border:none;cursor:pointer;font-size:1em;box-shadow:0 2px 10px #0002;">OK</button>
+//       <button id="modal-confirmacao-pronti-cancelar" style="background:#4757d3;color:#fff;font-weight:500;padding:9px 30px;border-radius:7px;border:none;cursor:pointer;font-size:1em;box-shadow:0 2px 8px #0002;">Cancelar</button>
+//     </div>
+//   </div>
+// </div>
+
+// Função do modal personalizado padrão Pronti:
 async function showCustomConfirm(titulo, mensagem) {
-    return window.confirm(`${titulo}\n\n${mensagem}`);
+    return new Promise(resolve => {
+        const modal = document.getElementById('modal-confirmacao-pronti');
+        const perguntaEl = document.getElementById('modal-confirmacao-pronti-pergunta');
+        const btnOk = document.getElementById('modal-confirmacao-pronti-ok');
+        const btnCancelar = document.getElementById('modal-confirmacao-pronti-cancelar');
+
+        perguntaEl.textContent = mensagem;
+        modal.style.display = 'flex';
+
+        function fechar(result){
+            modal.style.display = 'none';
+            btnOk.removeEventListener('click', acaoOk);
+            btnCancelar.removeEventListener('click', acaoCancela);
+            resolve(result);
+        }
+        function acaoOk(){ fechar(true); }
+        function acaoCancela(){ fechar(false); }
+
+        btnOk.addEventListener('click', acaoOk);
+        btnCancelar.addEventListener('click', acaoCancela);
+
+        // Esc permite fechar (cancelar)
+        modal.onkeydown = function(e){
+            if(e.key === "Escape") fechar(false);
+        }
+        btnOk.focus();
+    });
 }
 
 // Funções auxiliares para o slug (sem alterações)
@@ -137,7 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
     async function handleFormSubmit(event) {
         event.preventDefault();
 
-        // Modal de confirmação
+        // Modal de confirmação customizado padrão Pronti
         const confirmado = await showCustomConfirm(
             "Confirmação de Cadastro",
             "Tem certeza que deseja salvar as informações do perfil?"
