@@ -1,273 +1,300 @@
 // ======================================================================
-// ARQUIVO: servicos.js (VERSÃO FINAL CONDICIONAL)
+// ARQUIVO: servicos.js (VERSÃO ORGANIZADA — SERVIÇOS + SERVIÇOS_PET)
 // ======================================================================
-
-import { collection, doc, getDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import {
+  collection,
+  doc,
+  getDoc,
+  deleteDoc,
+  onSnapshot,
+  query
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { db, auth } from "./firebase-config.js";
 import { showCustomConfirm, showAlert } from "./vitrini-utils.js";
 
 // --- Mapeamento de Elementos do DOM ---
-const listaServicosDiv = document.getElementById('lista-servicos');
-const btnAddServico = document.querySelector('.btn-new');
-const btnPromocoes = document.getElementById('btnPromocoes');
+const listaServicosDiv = document.getElementById('lista-servicos'); 
+const btnAddServico = document.querySelector('.btn-new');           
+const btnPromocoes = document.getElementById('btnPromocoes');      
+const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 
-// --- Variáveis de Estado ---
+// --- Estado ---
 let empresaId = null;
 let isDono = false;
-let isPet = false; // Flag crucial para o layout e lógica
 const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
-// Obtém o empresaId da empresa ativa do localStorage
 function getEmpresaIdAtiva() {
-    return localStorage.getItem("empresaAtivaId") || null;
+  return localStorage.getItem("empresaAtivaId") || null;
 }
 
-// --- Inicialização e Autenticação ---
+// --- Inicialização e Auth ---
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        try {
-            empresaId = getEmpresaIdAtiva();
-            if (!empresaId) {
-                if (listaServicosDiv) listaServicosDiv.innerHTML = '<p style="color:red;">Nenhuma empresa ativa selecionada.</p>';
-                return;
-            }
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    empresaId = getEmpresaIdAtiva();
+    if (!empresaId) {
+      if (listaServicosDiv) listaServicosDiv.innerHTML = '<p style="color:red;">Nenhuma empresa ativa selecionada.</p>';
+      return;
+    }
 
-            const empresaRef = doc(db, "empresarios", empresaId);
-            const empresaSnap = await getDoc(empresaRef);
-            
-            if (empresaSnap.exists()) {
-                const empresaData = empresaSnap.data();
-                isDono = (empresaData.donoId === user.uid) || (user.uid === adminUID);
-                
-                // Define se a empresa é PET ou não.
-                isPet = (empresaData.tipoEmpresa === 'pets'); 
-            }
+    const empresaRef = doc(db, "empresarios", empresaId);
+    const empresaSnap = await getDoc(empresaRef);
+    if (empresaSnap.exists()) {
+      isDono = (empresaSnap.data().donoId === user.uid) || (user.uid === adminUID);
+    } else {
+      isDono = (user.uid === adminUID);
+    }
 
-            // Controlar visibilidade de AMBOS os botões
-            if (btnAddServico) {
-                btnAddServico.style.display = isDono ? 'inline-flex' : 'none';
-            }
-            if (btnPromocoes) {
-                btnPromocoes.style.display = isDono ? 'inline-flex' : 'none';
-            }
+    if (btnAddServico) btnAddServico.style.display = isDono ? 'inline-flex' : 'none';
+    if (btnPromocoes) btnPromocoes.style.display = isDono ? 'inline-flex' : 'none';
 
-            iniciarListenerDeServicos();
+    iniciarListeners();
 
-        } catch (error) {
-            console.error("Erro durante a inicialização:", error);
-            if(listaServicosDiv) listaServicosDiv.innerHTML = `<p style="color:red;">Ocorreu um erro crítico ao carregar a página.</p>`;
-        }
-    } else {
-        window.location.href = 'login.html';
-    }
+  } catch (err) {
+    console.error("Erro init servicos:", err);
+    if (listaServicosDiv) listaServicosDiv.innerHTML = `<p style="color:red;">Erro ao inicializar serviços.</p>`;
+  }
 });
 
-// --- Listener em Tempo Real (usando a coleção correta) ---
-function iniciarListenerDeServicos() {
-    if (!empresaId) return;
-    if (listaServicosDiv) listaServicosDiv.innerHTML = '<p>Carregando serviços...</p>';
+// --- Listeners em tempo real para ambas coleções ---
+let unsubscribeServicos = null;
+let unsubscribeServicosPet = null;
 
-    // Usa a coleção 'servicos_pet' se for empresa PET, ou 'servicos' se for Salão.
-    const colecaoServico = isPet ? "servicos_pet" : "servicos";
-    const servicosCol = collection(db, "empresarios", empresaId, colecaoServico);
-    const q = query(servicosCol);
+function iniciarListeners() {
+  if (!empresaId) return;
+  if (listaServicosDiv) listaServicosDiv.innerHTML = '<p>Carregando serviços...</p>';
 
-    onSnapshot(q, (snapshot) => {
-        // O renderizarServicos agora usa a flag 'isPet' global
-        const servicos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderizarServicos(servicos);
-    }, (error) => {
-        console.error("Erro ao carregar serviços em tempo real:", error);
-        if (listaServicosDiv) listaServicosDiv.innerHTML = '<p style="color:red;">Erro ao carregar os serviços.</p>';
-    });
+  const servicosCol = collection(db, "empresarios", empresaId, "servicos");
+  const servicosPetCol = collection(db, "empresarios", empresaId, "servicos_pet");
+
+  const q1 = query(servicosCol);
+  const q2 = query(servicosPetCol);
+
+  if (unsubscribeServicos) unsubscribeServicos();
+  if (unsubscribeServicosPet) unsubscribeServicosPet();
+
+  unsubscribeServicos = onSnapshot(q1, (snap) => {
+    const servicos = snap.docs.map(d => ({ id: d.id, ...d.data(), __type: 'normal' }));
+    mergeAndRender(servicos, null);
+  }, (err) => {
+    console.error("Erro realtime servicos:", err);
+    if (listaServicosDiv) listaServicosDiv.innerHTML = '<p style="color:red;">Erro ao carregar serviços.</p>';
+  });
+
+  unsubscribeServicosPet = onSnapshot(q2, (snap) => {
+    const servicosPet = snap.docs.map(d => ({ id: d.id, ...d.data(), __type: 'pet' }));
+    mergeAndRender(null, servicosPet);
+  }, (err) => {
+    console.error("Erro realtime servicos_pet:", err);
+    if (listaServicosDiv) listaServicosDiv.innerHTML = '<p style="color:red;">Erro ao carregar serviços PET.</p>';
+  });
 }
 
-// --- Renderização Final (chama a renderServicoCard) ---
-function renderizarServicos(servicos) {
-    if (!listaServicosDiv) return;
+// --- Buffer local ---
+let bufferServicos = [];
+let bufferServicosPet = [];
 
-    if (!servicos || servicos.length === 0) {
-        listaServicosDiv.innerHTML = `<p style="color: #fff; font-weight: 500;">Nenhum serviço cadastrado. ${isDono ? 'Clique em "Adicionar Novo Serviço" para começar.' : ''}</p>`;
-        return;
-    }
-
-    const agrupados = {};
-    servicos.forEach(servico => {
-        const cat = (servico.categoria && servico.categoria.trim()) ? servico.categoria.trim() : "Outros";
-        if (!agrupados[cat]) agrupados[cat] = [];
-        agrupados[cat].push(servico);
-    });
-
-    const categoriasOrdenadas = Object.keys(agrupados).sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-    // Chama renderServicoCard para cada serviço, passando a flag isPet
-    listaServicosDiv.innerHTML = categoriasOrdenadas.map(cat => {
-        const servicosCategoria = agrupados[cat].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
-        
-        return `
-            <div class="categoria-bloco">
-                <h2 class="categoria-titulo">${sanitizeHTML(cat)}</h2>
-                ${servicosCategoria.map(servico => renderServicoCard(servico, isPet)).join("")}
-            </div>
-        `;
-    }).join("");
+function mergeAndRender(servicos = null, servicosPet = null) {
+  if (servicos !== null) bufferServicos = servicos;
+  if (servicosPet !== null) bufferServicosPet = servicosPet;
+  renderizarTudo(bufferServicos || [], bufferServicosPet || []);
 }
 
-// --- Render cartão de serviço (Função de Layout) ---
+// --- Renderização principal ---
+function renderizarTudo(servicos, servicosPet) {
+  if (!listaServicosDiv) return;
+
+  if ((!servicos || servicos.length === 0) && (!servicosPet || servicosPet.length === 0)) {
+    listaServicosDiv.innerHTML = `<p style="color: #fff; font-weight: 500;">Nenhum serviço cadastrado. ${isDono ? 'Clique em "Adicionar Novo Serviço" para começar.' : ''}</p>`;
+    return;
+  }
+
+  const agruparPorCategoria = (items) => {
+    const agrup = {};
+    items.forEach(s => {
+      const cat = (s.categoria && s.categoria.trim()) ? s.categoria.trim() : "Outros";
+      if (!agrup[cat]) agrup[cat] = [];
+      agrup[cat].push(s);
+    });
+    Object.keys(agrup).forEach(cat => {
+      agrup[cat].sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR"));
+    });
+    return agrup;
+  };
+
+  const agrupNormais = agruparPorCategoria(servicos || []);
+  const agrupPets = agruparPorCategoria(servicosPet || []);
+
+  const renderCategoriaBlocos = (agrup, isPetSection) => {
+    const cats = Object.keys(agrup).sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return cats.map(cat => {
+      const cards = agrup[cat].map(s => renderServicoCard(s, isPetSection)).join("");
+      return `<div class="categoria-bloco">
+                <h2 class="categoria-titulo">${sanitizeHTML(cat)}</h2>
+                ${cards}
+              </div>`;
+    }).join("");
+  };
+
+  const htmlNormais = Object.keys(agrupNormais).length ? `<section class="sec-servicos-normais">
+      <h1 class="sec-titulo">Serviços</h1>
+      ${renderCategoriaBlocos(agrupNormais, false)}
+    </section>` : '';
+
+  const htmlPets = Object.keys(agrupPets).length ? `<section class="sec-servicos-pet">
+      <h1 class="sec-titulo">Serviços PET</h1>
+      ${renderCategoriaBlocos(agrupPets, true)}
+    </section>` : '';
+
+  listaServicosDiv.innerHTML = htmlPets + htmlNormais;
+}
+
+// --- Render cartão de serviço ---
+// Dois layouts: PET (exibe por porte/preço/duração) e NORMAL (preço fixo/duração comum)
 function renderServicoCard(servico, isPet) {
-  const nome = sanitizeHTML(servico.nome);
-  const desc = sanitizeHTML(servico.descricao || "");
-  
-  // Preço e duração padrão (serão usados para serviços Salão/Normal)
-  const precoBase = servico.preco || 0; 
-  const duracaoBase = servico.duracao || 0; 
+  const nome = sanitizeHTML(servico.nome);
+  const desc = sanitizeHTML(servico.descricao || "");
 
-  let petInfoHtml = "";
-  let showFooterDetails = true; // Exibir preço/duração no rodapé (padrão Salão)
-  
-  if (isPet) {
-    // SE FOR PET: NOVO LAYOUT
-    
-    if (Array.isArray(servico.precos) && servico.precos.length > 0) {
-      
-      // Desativa o resumo de preço/duração no rodapé (Layout Novo PET)
-      showFooterDetails = false; 
+  if (isPet) {
+    // Layout PET
+    let precosPorPorteHtml = "";
+    if (Array.isArray(servico.precos) && servico.precos.length > 0) {
+      precosPorPorteHtml = `
+        <div class="servico-preco-por-porte" style="margin-top: 10px;">
+          ${servico.precos.map(p => 
+            `<div style="margin-bottom:5px">
+              <strong>${sanitizeHTML(p.porte)}:</strong>
+              ${formatarPreco(p.preco)}
+              ${p.duracao ? ` • ${p.duracao} min` : ""}
+            </div>`
+          ).join("")}
+        </div>`;
+    }
 
-      // Constrói o HTML detalhado por porte
-      const precosPorPorteHtml = `
-        <div class="servico-pet-info">
-          <h4>Preços por Porte:</h4>
-          <div class="servico-preco-por-porte">
-            ${servico.precos.map(p => 
-              `<div>
-                <strong>${sanitizeHTML(p.porte)}:</strong> ${formatarPreco(p.preco || 0)}
-                ${p.duracao ? ` • ${p.duracao} min` : ""}
-              </div>`
-            ).join("")}
-          </div>
-        </div>`;
-      
-      petInfoHtml = precosPorPorteHtml; // O bloco extra PET é preenchido
-    } 
-  }
-    // SE FOR SALÃO (isPet=false): LAYOUT ANTIGO (showFooterDetails permanece true)
-  
-  // Monta o bloco de Preço/Duração para o rodapé (só se showFooterDetails for true)
-  const precoFormatado = formatarPreco(precoBase);
-  const duracaoFormatada = duracaoBase;
+    return `
+    <div class="servico-card servico-card-pet" data-id="${servico.id}" data-type="pet">
+      <div class="servico-header">
+        <h3 class="servico-titulo">${nome}</h3>
+      </div>
+      <p class="servico-descricao">${desc}</p>
+      ${precosPorPorteHtml}
+      <div class="servico-footer" style="margin-top:10px;">
+        <div>
+          ${servico.visivelNaVitrine ? "<span class='badge'>Exibido na vitrine</span>" : ""}
+        </div>
+        ${isDono ? `
+          <div class="servico-acoes">
+            <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="pet">Editar</button>
+            <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="pet">Excluir</button>
+          </div>` : ""}
+      </div>
+    </div>
+    `;
+  }
 
-  const priceDurationHtml = showFooterDetails ? 
-    `<div>
-      <span class="servico-preco">${precoFormatado}</span>
-      <span class="servico-duracao"> • ${duracaoFormatada} min</span>
-    </div>` : '<div></div>'; 
-
-  // Botões de Ação
-  const acoes = isDono ? `
-    <div class="servico-acoes">
-      <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">Editar</button>
-      <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">Excluir</button>
-    </div>` : "";
-
-  // Monta o Rodapé (sempre exibe os botões de ação e o bloco de preço/duração condicional)
-  const footerHtml = `<div class="servico-footer">${priceDurationHtml}${acoes}</div>`;
-
-  return `
-    <div class="servico-card" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">
-      <div class="servico-header">
-        <h3 class="servico-titulo">${nome}</h3>
-      </div>
-      <p class="servico-descricao">${desc}</p>
-      
-      ${petInfoHtml}
-      
-      ${footerHtml} 
-    </div>
-  `;
+  // Layout NORMAL
+  const preco = formatarPreco(servico.preco);
+  const duracao = servico.duracao ? (`${servico.duracao} min`) : "";
+  return `
+    <div class="servico-card servico-card-normal" data-id="${servico.id}" data-type="normal">
+      <div class="servico-header">
+        <h3 class="servico-titulo">${nome}</h3>
+      </div>
+      <p class="servico-descricao">${desc}</p>
+      <div class="servico-footer">
+        <div>
+          <span class="servico-preco">${preco}</span>
+          ${duracao ? `<span class="servico-duracao"> • ${duracao}</span>` : ""}
+        </div>
+        ${isDono ? `
+          <div class="servico-acoes">
+            <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="normal">Editar</button>
+            <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="normal">Excluir</button>
+          </div>` : ""}
+      </div>
+    </div>
+  `;
 }
 
-// --- Funções de Ação e Utilitários ---
-async function excluirServico(servicoId) {
-    if (!isDono) {
-        await showAlert("Acesso Negado", "Apenas o dono pode excluir serviços.");
-        return;
-    }
-    const confirmado = await showCustomConfirm("Confirmar Exclusão", "Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.");
-    if (!confirmado) return;
+// --- Excluir serviço ---
+async function excluirServico(servicoId, tipo) {
+  if (!isDono) {
+    await showAlert("Acesso Negado", "Apenas o dono pode excluir serviços.");
+    return;
+  }
+  const confirmado = await showCustomConfirm("Confirmar Exclusão", "Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.");
+  if (!confirmado) return;
 
-    try {
-        // Usa a coleção correta para excluir.
-        const colecaoServico = isPet ? "servicos_pet" : "servicos";
-        const servicoRef = doc(db, "empresarios", empresaId, colecaoServico, servicoId);
-        await deleteDoc(servicoRef);
-        console.log("Serviço excluído com sucesso!");
-        await showAlert("Sucesso", "Serviço excluído com sucesso.");
-    } catch (error) {
-        console.error("Erro ao excluir serviço:", error);
-        await showAlert("Erro", "Ocorreu um erro ao excluir o serviço: " + error.message);
-    }
+  try {
+    const caminho = tipo === 'pet' ? ["empresarios", empresaId, "servicos_pet", servicoId] : ["empresarios", empresaId, "servicos", servicoId];
+    const servicoRef = doc(db, ...caminho);
+    await deleteDoc(servicoRef);
+    await showAlert("Sucesso", "Serviço excluído com sucesso.");
+  } catch (err) {
+    console.error("Erro ao excluir serviço:", err);
+    await showAlert("Erro", "Não foi possível excluir o serviço: " + (err.message || err));
+  }
 }
 
+// --- Utilitários ---
 function formatarPreco(preco) {
-    try {
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(preco || 0);
-    } catch (e) {
-        return "R$ 0,00";
-    }
+  try {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(preco || 0);
+  } catch (e) {
+    return "R$ 0,00";
+  }
 }
-
 function sanitizeHTML(str) {
-    if (!str) return "";
-    const temp = document.createElement('div');
-    temp.textContent = str;
-    return temp.innerHTML;
+  if (!str) return "";
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
 }
 
 // --- Event Listeners ---
 if (listaServicosDiv) {
-    listaServicosDiv.addEventListener('click', function(e) {
-        const target = e.target.closest('.btn-acao');
-        if (!target) return;
-        const id = target.dataset.id;
-        // Pega o tipo de serviço (pet ou normal) do data-type do botão
-        const tipo = target.dataset.type || 'normal'; 
-        if (!id) return;
+  listaServicosDiv.addEventListener('click', function(e) {
+    const target = e.target.closest('.btn-acao');
+    if (!target) return;
+    const id = target.dataset.id;
+    const tipo = target.dataset.type || 'normal';
+    if (!id) return;
 
-        if (target.classList.contains('btn-editar')) {
-            // Redireciona para a tela de edição correta 
-            if (tipo === 'pet') {
-                window.location.href = `novo-servico-pet.html?id=${id}`;
-            } else {
-                window.location.href = `novo-servico.html?id=${id}`;
-            }
-        }
-        if (target.classList.contains('btn-excluir')) {
-            excluirServico(id);
-        }
-    });
+    if (target.classList.contains('btn-editar')) {
+      if (tipo === 'pet') {
+        window.location.href = `novo-servico-pet.html?id=${id}`;
+      } else {
+        window.location.href = `novo-servico.html?id=${id}`;
+      }
+    }
+    if (target.classList.contains('btn-excluir')) {
+      excluirServico(id, tipo);
+    }
+  });
 }
 
 if (btnAddServico) {
-    btnAddServico.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!isDono) {
-            showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
-        } else {
-            // Direciona para a tela de criação correta (Pet ou Salão)
-            const url = isPet ? 'novo-servico-pet.html' : 'novo-servico.html';
-            window.location.href = url;
-        }
-    });
+  btnAddServico.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!isDono) {
+      showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
+    } else {
+      window.location.href = 'novo-servico.html';
+    }
+  });
 }
 
 if (btnPromocoes) {
-    btnPromocoes.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!isDono) {
-            showAlert("Acesso Negado", "Apenas o dono pode gerenciar promoções.");
-        } else {
-            window.location.href = 'promocoes.html';
-        }
-    });
+  btnPromocoes.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!isDono) {
+      showAlert("Acesso Negado", "Apenas o dono pode gerenciar promoções.");
+    } else {
+      window.location.href = 'promocoes.html';
+    }
+  });
 }
