@@ -169,7 +169,11 @@ function renderServicoCard(servico, isPet) {
       precosPorPorteHtml = `
         <div class="servico-preco-por-porte">
           ${servico.precos.map(p =>
-            `<div style="margin-bottom:3px"><strong>${sanitizeHTML(p.porte)}:</strong> ${formatarPreco(p.preco)}${p.duracao ? ` • ${p.duracao} min` : ""}</div>`
+            `<div style="margin-bottom:3px">
+              <strong>${sanitizeHTML(p.porte)}:</strong> 
+              ${formatarPreco(p.preco)}
+              ${p.duracao ? ` • ${p.duracao} min` : ""}
+            </div>`
           ).join("")}
         </div>
       `;
