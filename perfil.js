@@ -13,6 +13,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { uploadFile } from './uploadService.js';
 import { app, db, auth, storage } from "./firebase-config.js";
+// ADICIONADO IMPORT DO MODAL
+import { showCustomConfirm } from "./vitrini-utils.js";
 
 // Funções auxiliares para o slug (sem alterações)
 function criarSlug(texto) {
@@ -131,6 +133,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     async function handleFormSubmit(event) {
         event.preventDefault();
+
+        // MODAL DE CONFIRMAÇÃO PADRÃO PRONTI
+        const confirmado = await showCustomConfirm(
+            "Confirmação de Cadastro",
+            "Tem certeza que deseja salvar as informações do perfil?"
+        );
+        if (!confirmado) return;
+
         elements.btnSalvar.disabled = true;
         elements.btnSalvar.textContent = 'A salvar...';
         try {
