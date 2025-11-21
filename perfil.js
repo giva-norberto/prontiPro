@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { uploadFile } from './uploadService.js';
 import { app, db, auth, storage } from "./firebase-config.js";
-// ADICIONADO IMPORT DO MODAL
+// IMPORT DO MODAL DE CONFIRMAÇÃO
 import { showCustomConfirm } from "./vitrini-utils.js";
 
 // Funções auxiliares para o slug (sem alterações)
