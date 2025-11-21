@@ -13,8 +13,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { uploadFile } from './uploadService.js';
 import { app, db, auth, storage } from "./firebase-config.js";
-// IMPORT DO MODAL DE CONFIRMAÇÃO
-import { showCustomConfirm } from "./vitrini-utils.js";
+
+// Função fake do modal para garantir funcionamento
+async function showCustomConfirm(titulo, mensagem) {
+    return window.confirm(`${titulo}\n\n${mensagem}`);
+}
 
 // Funções auxiliares para o slug (sem alterações)
 function criarSlug(texto) {
@@ -134,7 +137,7 @@ window.addEventListener('DOMContentLoaded', () => {
     async function handleFormSubmit(event) {
         event.preventDefault();
 
-        // MODAL DE CONFIRMAÇÃO PADRÃO PRONTI
+        // Modal de confirmação
         const confirmado = await showCustomConfirm(
             "Confirmação de Cadastro",
             "Tem certeza que deseja salvar as informações do perfil?"
@@ -177,7 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 trialDisponivel: trialDisponivel,
                 trialMotivoBloqueio: trialMotivoBloqueio,
 
-                tipoEmpresa: elements.tipoEmpresa?.value || "estetica" // ⭐ ADIÇÃO
+                tipoEmpresa: elements.tipoEmpresa?.value || "estetica"
             };
 
             const valorSlugInput = elements.slugInput.value.trim();
@@ -197,7 +200,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!empresaId) {
-                // garante doc de usuário (sem sobrescrever demais campos)
                 const userRef = doc(db, "usuarios", uid);
                 const userSnap = await getDoc(userRef);
                 if (!userSnap.exists()) {
@@ -209,9 +211,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // ==================================================
-                // (RESTO DO CÓDIGO ORIGINAL)
-                // ==================================================
                 const agora = new Date();
                 const trialStartTs = Timestamp.fromDate(agora);
                 const fimTrial = new Date(agora);
@@ -358,7 +357,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (elements.chavePixInput) elements.chavePixInput.value = dadosEmpresa.chavePix || '';
         if (elements.logoPreview) elements.logoPreview.src = dadosEmpresa.logoUrl || "https://placehold.co/80x80/eef2ff/4f46e5?text=Logo";
 
-        if (elements.tipoEmpresa) elements.tipoEmpresa.value = dadosEmpresa.tipoEmpresa || "estetica"; // ⭐ ADIÇÃO
+        if (elements.tipoEmpresa) elements.tipoEmpresa.value = dadosEmpresa.tipoEmpresa || "estetica";
 
         if (!empresaId) return;
 
