@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100% );
+            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             --primary-color: #4f46e5;
             --special-color: #16a34a; 
         }
@@ -35,11 +35,7 @@
             margin-bottom: 24px;
         }
         .header-actions { display: flex; gap: 12px; }
-        .page-header h1 {
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: #1e293b;
-        }
+        .page-header h1 { font-size: 1.9rem; font-weight: 800; color: #1e293b; }
         .btn-new, .btn-special {
             color: white; 
             padding: 12px 20px; 
@@ -118,34 +114,35 @@
 
 <script type="module">
     import { verificarAcesso } from './userService.js';
-    async function carregarMenu(papelUsuario) {
-        try {
-            const response = await fetch('menu-lateral.html');
-            if (!response.ok) throw new Error('menu-lateral.html não encontrado');
-            document.getElementById('menu-container').innerHTML = await response.text();
-            const menuModule = await import('./menu-lateral.js');
-            if (menuModule.ativarMenuLateral) await menuModule.ativarMenuLateral(papelUsuario);
-        } catch (error) {
-            console.error("Falha ao carregar o menu lateral:", error);
-        }
-    }
-    async function inicializarPagina() {
+
+    async function carregarMenuEPainel() {
         try {
             const sessao = await verificarAcesso();
             if (!sessao || !sessao.user) return;
+
             let papelUsuario = sessao.papeis || [];
             if (papelUsuario.length === 0) {
                 if(sessao.isAdmin) papelUsuario.push('admin');
                 if(sessao.isOwner) papelUsuario.push('dono');
                 if(papelUsuario.length === 0) papelUsuario.push('funcionario');
             }
-            await carregarMenu(papelUsuario);
+
+            // Carrega menu
+            const response = await fetch('menu-lateral.html');
+            if (!response.ok) throw new Error('menu-lateral.html não encontrado');
+            document.getElementById('menu-container').innerHTML = await response.text();
+            const menuModule = await import('./menu-lateral.js');
+            if (menuModule.ativarMenuLateral) await menuModule.ativarMenuLateral(papelUsuario);
+
+            // Agora os scripts de serviços podem inicializar normalmente
         } catch (error) {
             console.error("Erro crítico ao inicializar a página de serviços:", error);
             document.querySelector('.main-content').innerHTML = '<h1>Ocorreu um erro</h1><p>Não foi possível carregar a página. Tente novamente.</p>';
         }
     }
-    inicializarPagina();
+
+    // Inicia carregamento seguro
+    carregarMenuEPainel();
 </script>
 
 <script src="./firebase-config.js" type="module"></script>
