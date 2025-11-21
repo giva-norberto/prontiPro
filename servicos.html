@@ -4,35 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pronti - Serviços</title>
-    <!-- O link para style.css foi removido pois os estilos já estão no <style> abaixo -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* ======================================================================
-                                SEU CSS ORIGINAL - NENHUMA ALTERAÇÃO FOI FEITA AQUI
-             ====================================================================== */
-
+           SEU CSS ORIGINAL - NENHUMA ALTERAÇÃO FOI FEITA AQUI
+           ====================================================================== */
         :root {
             --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100% );
             --primary-color: #4f46e5;
             --special-color: #16a34a; 
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', Arial, sans-serif;
             background: var(--gradient-primary);
             color: #333;
             display: flex;
         }
-
         .main-content { 
             margin-left: 270px; 
             padding: 32px; 
             min-height: 100vh;
             flex-grow: 1;
         }
-
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -43,18 +37,12 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             margin-bottom: 24px;
         }
-        
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
+        .header-actions { display: flex; gap: 12px; }
         .page-header h1 {
             font-size: 1.9rem;
             font-weight: 800;
             color: #1e293b;
         }
-
         .btn-new, .btn-special {
             color: white; 
             padding: 12px 20px; 
@@ -66,21 +54,10 @@
             gap: 8px;
             transition: background-color 0.2s;
         }
-
-        .btn-new { 
-            background-color: var(--primary-color); 
-        }
-        .btn-new:hover {
-            background-color: #4338ca;
-        }
-
-        .btn-special {
-            background-color: var(--special-color);
-        }
-        .btn-special:hover {
-            background-color: #15803d;
-        }
-
+        .btn-new { background-color: var(--primary-color); }
+        .btn-new:hover { background-color: #4338ca; }
+        .btn-special { background-color: var(--special-color); }
+        .btn-special:hover { background-color: #15803d; }
         .categoria-titulo { font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin-top: 24px; margin-bottom: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
         .servico-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
         .servico-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
@@ -96,13 +73,11 @@
         .btn-editar:hover { background-color: #e0a800; }
         .btn-excluir { background-color: #dc3545; color: white; }
         .btn-excluir:hover { background-color: #c82333; }
-        
         @media (max-width: 900px) { 
             body { flex-direction: column; }
             .main-content { margin-left: 0; padding: 16px; }
             .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
         }
-
         .modal-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.ativo { display: flex; opacity: 1; }
         .modal-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25); text-align: center; max-width: 420px; width: 90%; }
@@ -110,14 +85,12 @@
         #modal-btn-confirmar { background-color: #d9534f; color: white; }
         #modal-btn-cancelar { background-color: #f0f0f0; color: #333; }
         #loader { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; font-size: 1.2em; backdrop-filter: blur(2px); }
-
     </style>
 </head>
 <body>
 
 <div id="loader" style="display: none;">Carregando...</div>
 
-<!-- ✅ O ID foi padronizado para 'menu-container' para consistência -->
 <div id="menu-container"></div>
 
 <main class="main-content">
@@ -132,7 +105,61 @@
     </div>
     
     <div id="lista-servicos">
-        <!-- O conteúdo desta div será preenchido pelo servicos.js -->
+        <!-- EXEMPLO DE CARDS: serão preenchidos dinamicamente via servicos.js -->
+        <!-- Serviços Normais -->
+        <section class="sec-servicos-normais">
+            <h1 class="sec-titulo">Serviços</h1>
+            <div class="categoria-bloco">
+                <h2 class="categoria-titulo">Cabelo</h2>
+                <div class="servico-card" data-id="1" data-type="normal">
+                    <div class="servico-header">
+                        <h3 class="servico-titulo">Corte Masculino</h3>
+                    </div>
+                    <p class="servico-descricao">Corte simples, rápido e moderno.</p>
+                    <div class="servico-footer">
+                        <div>
+                            <span class="servico-preco">R$ 50,00</span>
+                            <span class="servico-duracao"> • 30 min</span>
+                        </div>
+                        <div class="servico-acoes">
+                            <button class="btn-acao btn-editar" data-id="1" data-type="normal">Editar</button>
+                            <button class="btn-acao btn-excluir" data-id="1" data-type="normal">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Serviços PET -->
+        <section class="sec-servicos-pet">
+            <h1 class="sec-titulo">Serviços PET</h1>
+            <div class="categoria-bloco">
+                <h2 class="categoria-titulo">Banho e Tosa</h2>
+                <div class="servico-card" data-id="101" data-type="pet">
+                    <div class="servico-header">
+                        <h3 class="servico-titulo">Banho Completo</h3>
+                    </div>
+                    <p class="servico-descricao">Banho com shampoo especial e secagem.</p>
+                    <div class="servico-footer">
+                        <div>
+                            <span class="servico-preco">R$ 80,00</span>
+                            <span class="servico-duracao"> • 45 min</span>
+                        </div>
+                        <div class="servico-acoes">
+                            <button class="btn-acao btn-editar" data-id="101" data-type="pet">Editar</button>
+                            <button class="btn-acao btn-excluir" data-id="101" data-type="pet">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="servico-pet-info">
+                        <div class="servico-tags">🐾 Cachorro • Pequeno, Médio, Grande</div>
+                        <div class="servico-preco-por-porte">
+                            P: R$ 70,00 • M: R$ 80,00 • G: R$ 90,00
+                        </div>
+                        <div class="servico-duracao-pet">45 min</div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </main>
 
@@ -147,79 +174,41 @@
     </div>
 </div>
 
-<!-- ================================================================== -->
-<!-- ✅ INÍCIO DA ALTERAÇÃO: SCRIPT DE INICIALIZAÇÃO PADRÃO -->
-<!-- ================================================================== -->
 <script type="module">
-    // Importa a função de verificação de acesso
-    import { verificarAcesso } from './userService.js'; 
-
-    /**
-     * Carrega o menu lateral e o ativa com os papéis do usuário.
-     */
+    import { verificarAcesso } from './userService.js';
     async function carregarMenu(papelUsuario) {
         try {
             const response = await fetch('menu-lateral.html');
             if (!response.ok) throw new Error('menu-lateral.html não encontrado');
-            // ✅ O ID foi padronizado para 'menu-container'
             document.getElementById('menu-container').innerHTML = await response.text();
-            
             const menuModule = await import('./menu-lateral.js');
-            if (menuModule.ativarMenuLateral) {
-                // Passa os papéis do usuário para que o menu aplique as permissões
-                await menuModule.ativarMenuLateral(papelUsuario);
-            }
+            if (menuModule.ativarMenuLateral) await menuModule.ativarMenuLateral(papelUsuario);
         } catch (error) {
             console.error("Falha ao carregar o menu lateral:", error);
         }
     }
-
-    /**
-     * Ponto de entrada único que orquestra a inicialização da página.
-     */
     async function inicializarPagina() {
         try {
-            // 1. Garante que o usuário está logado e obtém a sessão.
             const sessao = await verificarAcesso();
-            if (!sessao || !sessao.user) {
-                return; // Se não estiver logado, a função já redireciona.
-            }
-
-            // 2. Define os papéis do usuário a partir da sessão.
+            if (!sessao || !sessao.user) return;
             let papelUsuario = sessao.papeis || [];
-            if (papelUsuario.length === 0) { // Garante que sempre haja um papel
+            if (papelUsuario.length === 0) {
                 if(sessao.isAdmin) papelUsuario.push('admin');
                 if(sessao.isOwner) papelUsuario.push('dono');
                 if(papelUsuario.length === 0) papelUsuario.push('funcionario');
             }
-
-            // 3. Carrega o menu lateral e aplica as permissões.
             await carregarMenu(papelUsuario);
-
-            // 4. A lógica de negócio (carregar serviços) já é iniciada pelos
-            // scripts importados abaixo, então não precisamos fazer mais nada aqui.
-
         } catch (error) {
             console.error("Erro crítico ao inicializar a página de serviços:", error);
             document.querySelector('.main-content').innerHTML = '<h1>Ocorreu um erro</h1><p>Não foi possível carregar a página. Tente novamente.</p>';
         }
     }
-
-    // Inicia todo o processo de inicialização da página.
     inicializarPagina();
 </script>
 
-<!-- Seus scripts de negócio são mantidos intactos no final -->
 <script src="./firebase-config.js" type="module"></script>
 <script src="./vitrini-utils.js" type="module"></script>
 <script src="./servicos.js" type="module"></script> 
-
-<!-- O script antigo que usava DOMContentLoaded foi removido -->
-<!-- 
-<script>
-    document.addEventListener("DOMContentLoaded", function() { ... });
-</script>
--->
 
 </body>
 </html>
