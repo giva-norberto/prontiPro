@@ -7,23 +7,22 @@ import {
   getDoc,
   deleteDoc,
   onSnapshot,
-  query,
-  orderBy
+  query
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { db, auth } from "./firebase-config.js";
 import { showCustomConfirm, showAlert } from "./vitrini-utils.js";
 
 // --- Mapeamento de Elementos do DOM ---
-const listaServicosDiv = document.getElementById('lista-servicos'); // contêiner principal
-const btnAddServico = document.querySelector('.btn-new');           // botão genérico (normal)
-const btnPromocoes = document.getElementById('btnPromocoes');      // botão promoções (opcional)
-const tituloServicosContainer = document.getElementById('titulo-servicos'); // opcional
+const listaServicosDiv = document.getElementById('lista-servicos'); 
+const btnAddServico = document.querySelector('.btn-new');           
+const btnPromocoes = document.getElementById('btnPromocoes');      
+const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 
 // --- Estado ---
 let empresaId = null;
 let isDono = false;
-const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2"; // mantenha ou altere
+const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 function getEmpresaIdAtiva() {
   return localStorage.getItem("empresaAtivaId") || null;
@@ -50,7 +49,6 @@ onAuthStateChanged(auth, async (user) => {
       isDono = (user.uid === adminUID);
     }
 
-    // controlar visibilidade dos botões
     if (btnAddServico) btnAddServico.style.display = isDono ? 'inline-flex' : 'none';
     if (btnPromocoes) btnPromocoes.style.display = isDono ? 'inline-flex' : 'none';
 
@@ -62,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// --- Listeners em tempo real para AMBAS coleções ---
+// --- Listeners em tempo real para ambas coleções ---
 let unsubscribeServicos = null;
 let unsubscribeServicosPet = null;
 
@@ -73,7 +71,7 @@ function iniciarListeners() {
   const servicosCol = collection(db, "empresarios", empresaId, "servicos");
   const servicosPetCol = collection(db, "empresarios", empresaId, "servicos_pet");
 
-  const q1 = query(servicosCol); // você pode adicionar orderBy(servicosCol, 'nome') se quiser
+  const q1 = query(servicosCol);
   const q2 = query(servicosPetCol);
 
   if (unsubscribeServicos) unsubscribeServicos();
@@ -81,7 +79,6 @@ function iniciarListeners() {
 
   unsubscribeServicos = onSnapshot(q1, (snap) => {
     const servicos = snap.docs.map(d => ({ id: d.id, ...d.data(), __type: 'normal' }));
-    // obtém também pet (se já tiver sido carregado, renderiza combinando)
     mergeAndRender(servicos, null);
   }, (err) => {
     console.error("Erro realtime servicos:", err);
@@ -97,34 +94,25 @@ function iniciarListeners() {
   });
 }
 
-// --- Buffer local para combinar chamadas independentes ---
+// --- Buffer local ---
 let bufferServicos = [];
 let bufferServicosPet = [];
 
 function mergeAndRender(servicos = null, servicosPet = null) {
   if (servicos !== null) bufferServicos = servicos;
   if (servicosPet !== null) bufferServicosPet = servicosPet;
-
-  // Quando nenhum dos dois estiver carregado: mostra carregando
-  if (!bufferServicos && !bufferServicosPet) {
-    if (listaServicosDiv) listaServicosDiv.innerHTML = '<p>Carregando serviços...</p>';
-    return;
-  }
-
   renderizarTudo(bufferServicos || [], bufferServicosPet || []);
 }
 
-// --- Renderização das duas seções ---
+// --- Renderização principal ---
 function renderizarTudo(servicos, servicosPet) {
   if (!listaServicosDiv) return;
 
-  // Se ambos vazios
   if ((!servicos || servicos.length === 0) && (!servicosPet || servicosPet.length === 0)) {
     listaServicosDiv.innerHTML = `<p style="color: #fff; font-weight: 500;">Nenhum serviço cadastrado. ${isDono ? 'Clique em "Adicionar Novo Serviço" para começar.' : ''}</p>`;
     return;
   }
 
-  // Função de agrupar e ordenar (reutilizável)
   const agruparPorCategoria = (items) => {
     const agrup = {};
     items.forEach(s => {
@@ -132,7 +120,6 @@ function renderizarTudo(servicos, servicosPet) {
       if (!agrup[cat]) agrup[cat] = [];
       agrup[cat].push(s);
     });
-    // ordenar serviços dentro da categoria por nome
     Object.keys(agrup).forEach(cat => {
       agrup[cat].sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR"));
     });
@@ -153,7 +140,6 @@ function renderizarTudo(servicos, servicosPet) {
     }).join("");
   };
 
-  // Monta HTML final separando as seções
   const htmlNormais = Object.keys(agrupNormais).length ? `<section class="sec-servicos-normais">
       <h1 class="sec-titulo">Serviços</h1>
       ${renderCategoriaBlocos(agrupNormais, false)}
@@ -164,26 +150,22 @@ function renderizarTudo(servicos, servicosPet) {
       ${renderCategoriaBlocos(agrupPets, true)}
     </section>` : '';
 
-  listaServicosDiv.innerHTML = htmlPets + htmlNormais; // PETs primeiro (opcional)
+  listaServicosDiv.innerHTML = htmlPets + htmlNormais;
 }
 
-// --- Render cartão do serviço (normal ou pet) ---
+// --- Render cartão de serviço ---
 function renderServicoCard(servico, isPet) {
-  // Campos comuns
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
   const preco = formatarPreco(servico.preco);
   const duracao = servico.duracao || 0;
 
-  // Campos PET (se existirem)
   let petInfoHtml = "";
   if (isPet) {
     const tipoAnimal = servico.tipoAnimal ? sanitizeHTML(servico.tipoAnimal) : "—";
-    // porte pode ser array ou string
     const porte = Array.isArray(servico.portes) ? servico.portes.join(", ") : (servico.porte || "");
     const tempoExtra = servico.tempoExtraOpcional ? ` • Extra: ${servico.tempoExtraOpcional} min` : "";
     let precoPorPorteHtml = "";
-    // Preço por porte (se existir)
     if (servico.precoPequeno || servico.precoMedio || servico.precoGrande || servico.precoGigante) {
       const parts = [];
       if (servico.precoPequeno) parts.push(`P: ${formatarPreco(servico.precoPequeno)}`);
@@ -195,21 +177,19 @@ function renderServicoCard(servico, isPet) {
 
     petInfoHtml = `
       <div class="servico-pet-info">
-        <div class="servico-tags">🐾 ${tipoAnimal} ${porte ? " • " + sanitizeHTML(porte) : ""}</div>
+        <div class="servico-tags">🐾 ${tipoAnimal}${porte ? " • " + sanitizeHTML(porte) : ""}</div>
         ${precoPorPorteHtml}
         <div class="servico-duracao-pet">${duracao} min ${tempoExtra}</div>
       </div>
     `;
   }
 
-  // Ações (editar/excluir) só para dono/admin
   const acoes = isDono ? `
     <div class="servico-acoes">
       <button class="btn-acao btn-editar" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">Editar</button>
       <button class="btn-acao btn-excluir" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">Excluir</button>
     </div>` : "";
 
-  // Composição final do card
   return `
     <div class="servico-card" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">
       <div class="servico-header">
@@ -228,13 +208,12 @@ function renderServicoCard(servico, isPet) {
   `;
 }
 
-// --- Ações: excluir ---
+// --- Excluir serviço ---
 async function excluirServico(servicoId, tipo) {
   if (!isDono) {
     await showAlert("Acesso Negado", "Apenas o dono pode excluir serviços.");
     return;
   }
-
   const confirmado = await showCustomConfirm("Confirmar Exclusão", "Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.");
   if (!confirmado) return;
 
@@ -264,7 +243,7 @@ function sanitizeHTML(str) {
   return temp.innerHTML;
 }
 
-// --- Event Listeners (editar/excluir/novo) ---
+// --- Event Listeners ---
 if (listaServicosDiv) {
   listaServicosDiv.addEventListener('click', function(e) {
     const target = e.target.closest('.btn-acao');
@@ -274,7 +253,6 @@ if (listaServicosDiv) {
     if (!id) return;
 
     if (target.classList.contains('btn-editar')) {
-      // redireciona para o formulário adequado
       if (tipo === 'pet') {
         window.location.href = `novo-servico-pet.html?id=${id}`;
       } else {
@@ -290,18 +268,14 @@ if (listaServicosDiv) {
 if (btnAddServico) {
   btnAddServico.addEventListener('click', (e) => {
     e.preventDefault();
-    // se quiser botões separados no UI (novo normal / novo pet) você pode usar data-attributes no HTML
     if (!isDono) {
       showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
     } else {
-      // por padrão redireciona para a criação de serviço normal;
-      // caso queira abrir lista de escolha (Normal / PET), troque por um modal
       window.location.href = 'novo-servico.html';
     }
   });
 }
 
-// botão promoções (se existir)
 if (btnPromocoes) {
   btnPromocoes.addEventListener('click', (e) => {
     e.preventDefault();
