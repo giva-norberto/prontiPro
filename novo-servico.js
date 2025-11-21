@@ -13,10 +13,11 @@ let servicoEditando = null;
 let isDono = false;
 let isAdmin = false;
 let userUid = null;
+let tipoEmpresa = null; // <-- novo
 
-const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2"; // Igual às suas regras
+const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
-// ====== MODAL PRONTI PARA CONFIRMAÇÃO E ALERTA ======
+// ===== MODAL PRONTI =====
 function prontiAlert(msg, callback) {
     showProntiModal(msg, [{ text: "OK", className: "pronti-btn pronti-btn-ok", onClick: callback }]);
 }
@@ -72,8 +73,8 @@ function showProntiModal(msg, actions) {
     modal.style.display = 'flex';
     modal.querySelector('#pronti-modal-close').onclick = () => { modal.style.display = 'none'; };
 }
-// =====================================================
 
+// =================== Funções utilitárias ===================
 function getEmpresaIdAtiva() {
     return localStorage.getItem("empresaAtivaId") || null;
 }
@@ -93,17 +94,6 @@ function getIdFromUrl() {
     return params.get('id');
 }
 
-function preencherFormulario(servico) {
-    document.getElementById('nome-servico').value = servico.nome || '';
-    document.getElementById('descricao-servico').value = servico.descricao || '';
-    document.getElementById('preco-servico').value = servico.preco !== undefined ? servico.preco : '';
-    document.getElementById('duracao-servico').value = servico.duracao !== undefined ? servico.duracao : '';
-    // Nova linha: categoria é opcional
-    if (document.getElementById('categoria-servico')) {
-        document.getElementById('categoria-servico').value = servico.categoria || '';
-    }
-}
-
 function usuarioEDono(empresa, uid) {
     return empresa && empresa.donoId === uid;
 }
@@ -116,6 +106,96 @@ function redirecionaSeSemEmpresa() {
     });
 }
 
+// =================== Preencher Formulário Dinâmico ===================
+function preencherFormulario(servico) {
+    if (tipoEmpresa === "pets") {
+        document.getElementById('nome-servico').value = servico.nome || '';
+        document.getElementById('descricao-servico').value = servico.descricao || '';
+        document.getElementById('duracao-servico').value = servico.duracao || '';
+        document.getElementById('porte-pet').value = servico.porte || '';
+        document.getElementById('preco-pequeno').value = servico.precoPequeno || '';
+        document.getElementById('preco-medio').value = servico.precoMedio || '';
+        document.getElementById('preco-grande').value = servico.precoGrande || '';
+    } else {
+        document.getElementById('nome-servico').value = servico.nome || '';
+        document.getElementById('descricao-servico').value = servico.descricao || '';
+        document.getElementById('preco-servico').value = servico.preco !== undefined ? servico.preco : '';
+        document.getElementById('duracao-servico').value = servico.duracao !== undefined ? servico.duracao : '';
+        const categoriaInput = document.getElementById('categoria-servico');
+        if (categoriaInput) categoriaInput.value = servico.categoria || '';
+    }
+}
+
+// =================== Montar Formulário Dinâmico ===================
+function montarFormularioPorTipo() {
+    const container = document.getElementById('campos-dinamicos');
+    container.innerHTML = '';
+
+    if (tipoEmpresa === "pets") {
+        container.innerHTML = `
+            <div class="form-group">
+                <label for="nome-servico">Nome do Serviço</label>
+                <input type="text" id="nome-servico" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao-servico">Descrição</label>
+                <textarea id="descricao-servico" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="porte-pet">Porte do Pet</label>
+                <select id="porte-pet" required>
+                    <option value="">Selecione...</option>
+                    <option value="pequeno">Pequeno</option>
+                    <option value="medio">Médio</option>
+                    <option value="grande">Grande</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="preco-pequeno">Preço (Pequeno)</label>
+                <input type="number" id="preco-pequeno" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="preco-medio">Preço (Médio)</label>
+                <input type="number" id="preco-medio" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="preco-grande">Preço (Grande)</label>
+                <input type="number" id="preco-grande" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="duracao-servico">Duração (minutos)</label>
+                <input type="number" id="duracao-servico" step="1" required>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="form-group">
+                <label for="nome-servico">Nome do Serviço</label>
+                <input type="text" id="nome-servico" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao-servico">Descrição</label>
+                <textarea id="descricao-servico" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="preco-servico">Preço</label>
+                <input type="number" id="preco-servico" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="duracao-servico">Duração (minutos)</label>
+                <input type="number" id="duracao-servico" step="1" required>
+            </div>
+            <div class="form-group">
+                <label for="categoria-servico">Categoria</label>
+                <input type="text" id="categoria-servico">
+            </div>
+        `;
+    }
+
+    if (servicoEditando) preencherFormulario(servicoEditando);
+}
+
+// =================== onAuthStateChanged ===================
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = 'login.html';
@@ -143,34 +223,29 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 
-    let empresa = null;
     const empresaSnap = await getDoc(doc(db, "empresarios", empresaId));
     if (empresaSnap.exists()) {
-        empresa = { id: empresaSnap.id, ...empresaSnap.data() };
+        const empresa = { id: empresaSnap.id, ...empresaSnap.data() };
+        tipoEmpresa = empresa.tipoEmpresa; // <-- define o tipo
+        isDono = usuarioEDono(empresa, userUid);
     } else {
-        console.warn("Empresa ativa não encontrada no Firestore!");
-        prontiAlert("Erro: empresa ativa não encontrada! Refaça o cadastro da empresa ou selecione uma empresa existente.", () => {
+        prontiAlert("Erro: empresa ativa não encontrada!", () => {
             limparEmpresaAtiva();
             window.location.href = 'selecionar-empresa.html';
         });
         return;
     }
 
-    isDono = usuarioEDono(empresa, userUid);
+    montarFormularioPorTipo();
 
     servicoId = getIdFromUrl();
     if (servicoId) {
-        const tituloForm = document.querySelector('.form-card h1');
-        if (tituloForm) tituloForm.textContent = 'Editar Serviço';
-        if (empresaId && servicoId) {
-            const servicoRef = doc(db, "empresarios", empresaId, "servicos", servicoId);
-            const servicoSnap = await getDoc(servicoRef);
-            if (servicoSnap.exists()) {
-                servicoEditando = { id: servicoSnap.id, ...servicoSnap.data() };
-                preencherFormulario(servicoEditando);
-            } else {
-                prontiAlert("Serviço não encontrado!");
-            }
+        const servicoSnap = await getDoc(doc(db, "empresarios", empresaId, "servicos", servicoId));
+        if (servicoSnap.exists()) {
+            servicoEditando = { id: servicoSnap.id, ...servicoSnap.data() };
+            preencherFormulario(servicoEditando);
+        } else {
+            prontiAlert("Serviço não encontrado!");
         }
     }
 
@@ -189,32 +264,16 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// =================== Eventos ===================
 if (form) form.addEventListener('submit', handleFormSubmit);
 if (btnExcluir) btnExcluir.addEventListener('click', handleServicoExcluir);
 
+// =================== Submit ===================
 async function handleFormSubmit(e) {
     e.preventDefault();
 
     if (!empresaId) {
         redirecionaSeSemEmpresa();
-        return;
-    }
-    
-    if (!isDono && !isAdmin && !servicoEditando) {
-        prontiAlert("Acesso Negado: Apenas o dono ou admin podem criar um novo serviço.");
-        return;
-    }
-
-    const nome = document.getElementById('nome-servico').value.trim();
-    const descricao = document.getElementById('descricao-servico').value.trim();
-    const preco = parseFloat(document.getElementById('preco-servico').value);
-    const duracao = parseInt(document.getElementById('duracao-servico').value, 10);
-    // Nova linha: categoria é opcional
-    const categoriaInput = document.getElementById('categoria-servico');
-    const categoria = categoriaInput ? categoriaInput.value.trim() : undefined;
-
-    if (!nome || isNaN(preco) || isNaN(duracao) || preco < 0 || duracao <= 0) {
-        prontiAlert("Atenção: Preencha todos os campos obrigatórios corretamente.");
         return;
     }
 
@@ -223,40 +282,58 @@ async function handleFormSubmit(e) {
     btnSalvar.textContent = "Salvando...";
 
     try {
-        if (servicoEditando) {
-            if (!empresaId || !servicoId) throw new Error("Dados de identificação do serviço incompletos.");
-            const servicoRef = doc(db, "empresarios", empresaId, "servicos", servicoId);
-            const updateData = { nome, descricao, preco, duracao };
-            // Só adiciona categoria se existir input (campo opcional)
-            if (categoriaInput) updateData.categoria = categoria;
-            await updateDoc(servicoRef, updateData);
-        } else {
-            if (!empresaId) throw new Error("Empresa ativa não definida.");
-            const servicosCol = collection(db, "empresarios", empresaId, "servicos");
-            const novoServico = { 
-                nome, 
-                descricao, 
-                preco, 
-                duracao, 
-                visivelNaVitrine: true 
+        let dadosServico = {};
+
+        if (tipoEmpresa === "pets") {
+            dadosServico = {
+                nome: document.getElementById('nome-servico').value.trim(),
+                descricao: document.getElementById('descricao-servico').value.trim(),
+                duracao: parseInt(document.getElementById('duracao-servico').value, 10),
+                porte: document.getElementById('porte-pet').value,
+                precoPequeno: parseFloat(document.getElementById('preco-pequeno').value),
+                precoMedio: parseFloat(document.getElementById('preco-medio').value),
+                precoGrande: parseFloat(document.getElementById('preco-grande').value),
+                visivelNaVitrine: true
             };
-            // Só adiciona categoria se existir input (campo opcional)
-            if (categoriaInput) novoServico.categoria = categoria;
-            await addDoc(servicosCol, novoServico);
+            if (!dadosServico.nome || !dadosServico.porte || isNaN(dadosServico.duracao) ||
+                isNaN(dadosServico.precoPequeno) || isNaN(dadosServico.precoMedio) || isNaN(dadosServico.precoGrande)) {
+                throw new Error("Preencha todos os campos obrigatórios corretamente.");
+            }
+        } else {
+            const categoriaInput = document.getElementById('categoria-servico');
+            dadosServico = {
+                nome: document.getElementById('nome-servico').value.trim(),
+                descricao: document.getElementById('descricao-servico').value.trim(),
+                preco: parseFloat(document.getElementById('preco-servico').value),
+                duracao: parseInt(document.getElementById('duracao-servico').value, 10),
+                visivelNaVitrine: true
+            };
+            if (categoriaInput) dadosServico.categoria = categoriaInput.value.trim();
+            if (!dadosServico.nome || isNaN(dadosServico.preco) || isNaN(dadosServico.duracao)) {
+                throw new Error("Preencha todos os campos obrigatórios corretamente.");
+            }
+        }
+
+        if (servicoEditando) {
+            await updateDoc(doc(db, "empresarios", empresaId, "servicos", servicoId), dadosServico);
+        } else {
+            await addDoc(collection(db, "empresarios", empresaId, "servicos"), dadosServico);
         }
 
         prontiAlert(servicoEditando ? "Serviço atualizado com sucesso!" : "Serviço salvo com sucesso!", () => {
             window.location.href = 'servicos.html';
         });
+
     } catch (err) {
-        console.error("Erro ao salvar serviço:", err);
-        prontiAlert(`Ocorreu um erro ao salvar o serviço: ${err.message}`);
+        prontiAlert(err.message || "Erro ao salvar serviço.");
+        console.error(err);
     } finally {
         btnSalvar.disabled = false;
         btnSalvar.textContent = "Salvar Serviço";
     }
 }
 
+// =================== Excluir ===================
 async function handleServicoExcluir(e) {
     e.preventDefault();
     if ((!isDono && !isAdmin) || !servicoEditando) return;
@@ -265,17 +342,15 @@ async function handleServicoExcluir(e) {
         "Tem certeza que deseja excluir este serviço? Esta ação é permanente.",
         async () => {
             try {
-                if (!empresaId || !servicoId) throw new Error("Dados de identificação do serviço incompletos.");
-                const servicoRef = doc(db, "empresarios", empresaId, "servicos", servicoId);
-                await deleteDoc(servicoRef);
+                await deleteDoc(doc(db, "empresarios", empresaId, "servicos", servicoId));
                 prontiAlert("Serviço excluído com sucesso.", () => {
                     window.location.href = 'servicos.html';
                 });
             } catch (err) {
-                console.error("Erro ao excluir serviço:", err);
                 prontiAlert(`Ocorreu um erro ao excluir o serviço: ${err.message}`);
+                console.error(err);
             }
         },
-        () => { /* Cancelado */ }
+        () => {}
     );
 }
