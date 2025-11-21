@@ -129,6 +129,7 @@ function renderizarTudo(servicos, servicosPet) {
   const agrupNormais = agruparPorCategoria(servicos || []);
   const agrupPets = agruparPorCategoria(servicosPet || []);
 
+  // <<< REMOVIDO O TÍTULO "Serviços" DO BLOCO NORMAL >>>
   const renderCategoriaBlocos = (agrup, isPetSection) => {
     const cats = Object.keys(agrup).sort((a, b) => a.localeCompare(b, "pt-BR"));
     return cats.map(cat => {
@@ -140,8 +141,8 @@ function renderizarTudo(servicos, servicosPet) {
     }).join("");
   };
 
+  // <<< REMOVIDO O TÍTULO "Serviços" >>>
   const htmlNormais = Object.keys(agrupNormais).length ? `<section class="sec-servicos-normais">
-      <h1 class="sec-titulo">Serviços</h1>
       ${renderCategoriaBlocos(agrupNormais, false)}
     </section>` : '';
 
@@ -154,6 +155,7 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
+// Layout PET: nome, descrição, preços por porte. NÃO mostra título "Serviços PET".
 function renderServicoCard(servico, isPetSection) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
@@ -161,12 +163,9 @@ function renderServicoCard(servico, isPetSection) {
   const isPet = isPetSection || servico.tipo === 'pets';
 
   if (isPet) {
-    // Layout PET SEM valor no cabeçalho
+    // Remove o cabeçalho "Serviços PET"
     return `
     <div class="servico-card servico-card-pet" data-id="${servico.id}" data-type="pet" style="border:2px solid #38bdf8;border-radius:16px;box-shadow:0 1px 12px #0002;background:#fff;margin-bottom:18px;padding:22px;max-width:360px;">
-      <div style="font-size:1.15rem;font-weight:700;color:#444;margin-bottom:6px;">
-        Serviços <span style="color:#38bdf8">PET</span>
-      </div>
       <div class="servico-header" style="display:flex;align-items:center;">
         <h3 class="servico-titulo" style="font-size:1.28em;font-weight:700;color:#222;margin:0;flex:1;">
           ${nome}
