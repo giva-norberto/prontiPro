@@ -154,7 +154,6 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
-// Layout PET: nome, descrição, preços por porte. NÃO mostra valor no topo.
 function renderServicoCard(servico, isPetSection) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
@@ -266,17 +265,12 @@ if (listaServicosDiv) {
     const target = e.target.closest('.btn-acao');
     if (!target) return;
     const id = target.dataset.id;
-    const tipo = target.dataset.type || 'normal';
-    if (!id) return;
-
+    // Sempre redireciona para novo-servico.html, independente do tipo
     if (target.classList.contains('btn-editar')) {
-      if (tipo === 'pet') {
-        window.location.href = `novo-servico-pet.html?id=${id}`;
-      } else {
-        window.location.href = `novo-servico.html?id=${id}`;
-      }
+      window.location.href = `novo-servico.html?id=${id}`;
     }
     if (target.classList.contains('btn-excluir')) {
+      const tipo = target.dataset.type || 'normal';
       excluirServico(id, tipo);
     }
   });
