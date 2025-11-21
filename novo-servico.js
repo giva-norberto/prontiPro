@@ -13,7 +13,7 @@ let servicoEditando = null;
 let isDono = false;
 let isAdmin = false;
 let userUid = null;
-let tipoEmpresa = null; // <-- novo
+let tipoEmpresa = null;
 
 const ADMIN_UID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
@@ -111,11 +111,19 @@ function preencherFormulario(servico) {
     if (tipoEmpresa === "pets") {
         document.getElementById('nome-servico').value = servico.nome || '';
         document.getElementById('descricao-servico').value = servico.descricao || '';
-        document.getElementById('duracao-servico').value = servico.duracao || '';
-        document.getElementById('porte-pet').value = servico.porte || '';
-        document.getElementById('preco-pequeno').value = servico.precoPequeno || '';
-        document.getElementById('preco-medio').value = servico.precoMedio || '';
-        document.getElementById('preco-grande').value = servico.precoGrande || '';
+
+        // Preencher campos de cada porte
+        if (servico.precos) {
+            const pequeno = servico.precos.find(p => p.porte === "pequeno") || {};
+            const medio = servico.precos.find(p => p.porte === "medio") || {};
+            const grande = servico.precos.find(p => p.porte === "grande") || {};
+            document.getElementById('preco-pequeno').value = pequeno.preco || '';
+            document.getElementById('duracao-pequeno').value = pequeno.duracao || '';
+            document.getElementById('preco-medio').value = medio.preco || '';
+            document.getElementById('duracao-medio').value = medio.duracao || '';
+            document.getElementById('preco-grande').value = grande.preco || '';
+            document.getElementById('duracao-grande').value = grande.duracao || '';
+        }
     } else {
         document.getElementById('nome-servico').value = servico.nome || '';
         document.getElementById('descricao-servico').value = servico.descricao || '';
@@ -141,30 +149,34 @@ function montarFormularioPorTipo() {
                 <label for="descricao-servico">Descrição</label>
                 <textarea id="descricao-servico" rows="3"></textarea>
             </div>
-            <div class="form-group">
-                <label for="porte-pet">Porte do Pet</label>
-                <select id="porte-pet" required>
-                    <option value="">Selecione...</option>
-                    <option value="pequeno">Pequeno</option>
-                    <option value="medio">Médio</option>
-                    <option value="grande">Grande</option>
-                </select>
-            </div>
+
+            <h3>Preço e Duração por Porte</h3>
+
             <div class="form-group">
                 <label for="preco-pequeno">Preço (Pequeno)</label>
                 <input type="number" id="preco-pequeno" step="0.01" required>
             </div>
             <div class="form-group">
+                <label for="duracao-pequeno">Duração (minutos - Pequeno)</label>
+                <input type="number" id="duracao-pequeno" step="1" required>
+            </div>
+
+            <div class="form-group">
                 <label for="preco-medio">Preço (Médio)</label>
                 <input type="number" id="preco-medio" step="0.01" required>
             </div>
+            <div class="form-group">
+                <label for="duracao-medio">Duração (minutos - Médio)</label>
+                <input type="number" id="duracao-medio" step="1" required>
+            </div>
+
             <div class="form-group">
                 <label for="preco-grande">Preço (Grande)</label>
                 <input type="number" id="preco-grande" step="0.01" required>
             </div>
             <div class="form-group">
-                <label for="duracao-servico">Duração (minutos)</label>
-                <input type="number" id="duracao-servico" step="1" required>
+                <label for="duracao-grande">Duração (minutos - Grande)</label>
+                <input type="number" id="duracao-grande" step="1" required>
             </div>
         `;
     } else {
@@ -226,7 +238,7 @@ onAuthStateChanged(auth, async (user) => {
     const empresaSnap = await getDoc(doc(db, "empresarios", empresaId));
     if (empresaSnap.exists()) {
         const empresa = { id: empresaSnap.id, ...empresaSnap.data() };
-        tipoEmpresa = empresa.tipoEmpresa; // <-- define o tipo
+        tipoEmpresa = empresa.tipoEmpresa;
         isDono = usuarioEDono(empresa, userUid);
     } else {
         prontiAlert("Erro: empresa ativa não encontrada!", () => {
@@ -288,15 +300,29 @@ async function handleFormSubmit(e) {
             dadosServico = {
                 nome: document.getElementById('nome-servico').value.trim(),
                 descricao: document.getElementById('descricao-servico').value.trim(),
-                duracao: parseInt(document.getElementById('duracao-servico').value, 10),
-                porte: document.getElementById('porte-pet').value,
-                precoPequeno: parseFloat(document.getElementById('preco-pequeno').value),
-                precoMedio: parseFloat(document.getElementById('preco-medio').value),
-                precoGrande: parseFloat(document.getElementById('preco-grande').value),
-                visivelNaVitrine: true
+                tipo: "pets",
+                visivelNaVitrine: true,
+                precos: [
+                    { 
+                        porte: "pequeno", 
+                        preco: parseFloat(document.getElementById('preco-pequeno').value),
+                        duracao: parseInt(document.getElementById('duracao-pequeno').value, 10)
+                    },
+                    { 
+                        porte: "medio", 
+                        preco: parseFloat(document.getElementById('preco-medio').value),
+                        duracao: parseInt(document.getElementById('duracao-medio').value, 10)
+                    },
+                    { 
+                        porte: "grande", 
+                        preco: parseFloat(document.getElementById('preco-grande').value),
+                        duracao: parseInt(document.getElementById('duracao-grande').value, 10)
+                    }
+                ]
             };
-            if (!dadosServico.nome || !dadosServico.porte || isNaN(dadosServico.duracao) ||
-                isNaN(dadosServico.precoPequeno) || isNaN(dadosServico.precoMedio) || isNaN(dadosServico.precoGrande)) {
+
+            // Validação completa
+            if (!dadosServico.nome || dadosServico.precos.some(p => isNaN(p.preco) || isNaN(p.duracao))) {
                 throw new Error("Preencha todos os campos obrigatórios corretamente.");
             }
         } else {
