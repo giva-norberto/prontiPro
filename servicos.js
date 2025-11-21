@@ -22,7 +22,7 @@ const tituloServicosContainer = document.getElementById('titulo-servicos'); 
 // --- Estado ---
 let empresaId = null;
 let isDono = false;
-let tipoEmpresa = null; // Mantido, mas não usado para redirecionamento do botão Add
+let tipoEmpresa = null; 
 const adminUID = "BX6Q7HrVMrcCBqe72r7K76EBPkX2";
 
 function getEmpresaIdAtiva() {
@@ -45,8 +45,8 @@ onAuthStateChanged(auth, async (user) => {
     const empresaRef = doc(db, "empresarios", empresaId);
     const empresaSnap = await getDoc(empresaRef);
     if (empresaSnap.exists()) {
-      const empresaData = empresaSnap.data(); 
-      tipoEmpresa = empresaData.tipoEmpresa; 
+      const empresaData = empresaSnap.data(); 
+      tipoEmpresa = empresaData.tipoEmpresa; 
       isDono = (empresaData.donoId === user.uid) || (user.uid === adminUID);
     } else {
       isDono = (user.uid === adminUID);
@@ -157,7 +157,7 @@ function renderizarTudo(servicos, servicosPet) {
 }
 
 // --- Render cartão de serviço ---
-// CORRIGIDO: Exibe info PET com array precos (porte, preço, duração)
+// CORRIGIDO: Exibe info PET com array precos (porte, preço, duração) e corrige aninhamento do HTML
 function renderServicoCard(servico, isPet) {
   const nome = sanitizeHTML(servico.nome);
   const desc = sanitizeHTML(servico.descricao || "");
@@ -176,7 +176,7 @@ function renderServicoCard(servico, isPet) {
       precoBase = servico.precos[0].preco || 0;
       duracaoBase = servico.precos[0].duracao || 0;
 
-      // Monta o HTML detalhado por porte (que aparece na parte de baixo do card)
+      // Monta o HTML detalhado por porte
       precosPorPorteHtml = `
         <div class="servico-preco-por-porte">
           ${servico.precos.map(p => 
@@ -204,15 +204,17 @@ function renderServicoCard(servico, isPet) {
     <div class="servico-card" data-id="${servico.id}" data-type="${isPet ? 'pet' : 'normal'}">
       <div class="servico-header">
         <h3 class="servico-titulo">${nome}</h3>
-        <div class="servico-footer">
-          <div>
-            <span class="servico-preco">${precoFormatado}</span>
-            <span class="servico-duracao"> • ${duracaoFormatada} min</span>
-          </div>
-          ${acoes}
-        </div>
       </div>
       <p class="servico-descricao">${desc}</p>
+      
+      <div class="servico-footer"> 
+        <div>
+          <span class="servico-preco">${precoFormatado}</span>
+          <span class="servico-duracao"> • ${duracaoFormatada} min</span>
+        </div>
+        ${acoes}
+      </div>
+      
       ${petInfoHtml}
     </div>
   `;
@@ -282,7 +284,7 @@ if (btnAddServico) {
     if (!isDono) {
       showAlert("Acesso Negado", "Apenas o dono pode adicionar serviços.");
     } else {
-      // ✅ CORREÇÃO AQUI: Direciona sempre para novo-servico.html
+      // CORREÇÃO: Direciona sempre para novo-servico.html
       window.location.href = 'novo-servico.html';
     }
   });
