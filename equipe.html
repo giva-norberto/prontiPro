@@ -64,11 +64,12 @@
                     </small>
                 </div>
                 <div class="form-actions">
-                    <button type="button" id="btn-cancelar-profissional" class="btn btn-secondary">
-                        ❌ Cancelar
-                    </button>
+                    <!-- Salvar primeiro (alterado conforme solicitado) -->
                     <button type="submit" class="btn btn-success btn-submit">
                         💾 Salvar Profissional
+                    </button>
+                    <button type="button" id="btn-cancelar-profissional" class="btn btn-secondary">
+                        ❌ Cancelar
                     </button>
                 </div>
             </form>
@@ -89,15 +90,19 @@
                 <button id="tab-servicos" class="tab-btn active">Serviços</button>
                 <button id="tab-horarios" class="tab-btn">Horários & Intervalos</button>
                 <button id="tab-agenda-especial" class="tab-btn">Agenda Especial</button>
+                <!-- NOVA ABA -->
+                <button id="tab-comissao" class="tab-btn">Comissão</button>
             </div>
+
             <div id="tab-content-servicos" class="tab-content active">
                 <h3>🛠️ Serviços Disponíveis</h3>
                 <p style="color: #7f8c8d; margin-bottom: 15px;">Selecione os serviços que este profissional pode realizar:</p>
                 <div id="servicos-lista" class="servicos-grid"></div>
             </div>
+
             <div id="tab-content-horarios" class="tab-content">
                 <h3>🕐 Horários de Atendimento</h3>
-                <p style="color: #7f8c8d; margin-bottom: 12px;">Configure os horários e intervalos de trabalho para cada dia da semana:</p>
+                <p style="color: #7f8c8d; margin-bottom: 12px;">Configure os horários e intervalos:</p>
                 <div class="form-group">
                     <label for="intervalo-atendimento">Intervalo de Atendimento (min):</label>
                     <input 
@@ -116,13 +121,13 @@
                 <div class="form-group" style="margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
                     <label for="permitir-agendamento-multiplo" style="display: flex; align-items: center; cursor: pointer;">
                         <input type="checkbox" id="permitir-agendamento-multiplo" name="permitir-agendamento-multiplo" style="width: 18px; height: 18px; margin-right: 10px;">
-                        Permitir que clientes agendem múltiplos serviços em uma única sessão
+                        Permitir vários serviços de uma vez
                     </label>
                     <small style="color: #7f8c8d; margin-top: 8px; display: block; padding-left: 28px;">
-                        Se ativado, o sistema somará a duração dos serviços e procurará um horário que comporte o tempo total.
                     </small>
                 </div>
             </div>
+
             <div id="tab-content-agenda-especial" class="tab-content">
                 <h3>📅 Agenda Especial</h3>
                 <p style="color: #7f8c8d; margin-bottom: 10px;">
@@ -152,12 +157,46 @@
                     <div id="agenda-especial-lista" style="margin-top:18px;"></div>
                 </div>
             </div>
+
+            <!-- ABA COMISSÃO COM LISTAGEM DE SERVIÇOS -->
+            <div id="tab-content-comissao" class="tab-content">
+                <h3>💰 Configuração de Comissão</h3>
+                <p style="color: #7f8c8d; margin-bottom: 10px;">
+                    Defina as comissões padrão e específicas por serviço para este profissional.
+                </p>
+
+                <div class="form-group">
+                    <label for="comissao-padrao">Comissão Padrão (%)</label>
+                    <input 
+                        type="number" 
+                        id="comissao-padrao" 
+                        name="comissao-padrao" 
+                        class="form-control" 
+                        placeholder="Ex: 40"
+                        min="0" 
+                        max="100"
+                    >
+                    <small style="color: #7f8c8d; margin-top: 4px; display: block;">
+                        Percentual aplicado em todos os serviços, caso não haja uma comissão específica.
+                    </small>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Comissão por Serviço (%)</label>
+                    <div id="comissao-servicos-lista"></div>
+                    <small style="color: #7f8c8d; margin-top: 4px; display: block;">
+                        Preencha a comissão de cada serviço. Se deixar vazio, será usada a comissão padrão.
+                    </small>
+                </div>
+            </div>
+
             <div class="form-actions">
-                <button type="button" id="btn-cancelar-perfil" class="btn btn-secondary">
-                    ❌ Cancelar
-                </button>
+                <!-- Salvar primeiro (alterado conforme solicitado) -->
                 <button type="button" id="btn-salvar-perfil" class="btn btn-success">
                     💾 Salvar Configurações
+                </button>
+                <button type="button" id="btn-cancelar-perfil" class="btn btn-secondary">
+                    ❌ Cancelar
                 </button>
             </div>
         </div>
@@ -185,8 +224,9 @@
                 });
         });
     </script>
-    <!-- Removido o hook DEBUG de upload aqui, pois o fluxo de upload e atualização já está no equipe.js -->
+
     <script type="module" src="equipe.js"></script>
+
     <style>
     .modal-overlay {
       display: none;
@@ -214,16 +254,120 @@
     }
     .modal-botoes button#modal-btn-cancelar { background: #aaa; }
     </style>
+
     <script>
-    // Atualização da tela após salvar profissional (foto ou não)
     document.addEventListener("DOMContentLoaded", function() {
-        // O evento de submit do form já é tratado no equipe.js, então só precisamos garantir o reload após upload
-        // Vamos interceptar o evento customizado disparado após sucesso, ou sobrescrever a função para reload
-        // Você pode garantir isso assim (mas normalmente já está no equipe.js):
         window.addEventListener("profissionalSalvo", function() {
             window.location.reload();
         });
     });
     </script>
+
+    <!-- ===== Estilos adicionais apenas para melhorar a aparência das abas e reduzir tamanho em mobile ===== -->
+    <style>
+    /* Container das abas: leve fundo, borda arredondada e rolagem horizontal em mobile */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      align-items: center;
+      padding: 6px;
+      background: linear-gradient(180deg, #f6f9ff 0%, #ffffff 100%);
+      border-radius: 10px;
+      -webkit-overflow-scrolling: touch;
+      overflow-x: auto;
+      scrollbar-width: none; /* Firefox */
+    }
+    .tabs::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+    /* Botões das abas (ajustados para serem menores/no mobile caber mais abas) */
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #1f2937; /* cinza escuro */
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+      position: relative;
+      /* allow wrapping so two-word labels stack and make tab taller */
+      white-space: normal;
+      word-break: break-word;
+      text-align: center;
+      overflow: visible;
+      max-width: 120px;
+      min-width: 68px;
+      box-shadow: inset 0 -1px 0 rgba(3,105,161,0.03);
+      line-height: 1.05;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(79,102,229,0.05);
+    }
+
+    /* Aba ativa: cor viva, sombra e destaque (mais evidente) */
+    .tab-btn.active {
+      background: linear-gradient(135deg, #0575E6 0%, #00C6FF 100%);
+      color: #ffffff;
+      box-shadow: 0 12px 30px rgba(5,117,230,0.18);
+      transform: translateY(-4px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* Strong visual contrast for active tab label (avoid washed-out look) */
+    .tab-btn.active,
+    .tab-btn.active * {
+      opacity: 1 !important;
+      color: #fff !important;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    }
+
+    /* Pequeno indicador decorativo abaixo da aba ativa */
+    .tab-btn.active::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36%;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(0,0,0,0.08);
+    }
+
+    /* Acessibilidade - foco visível */
+    .tab-btn:focus {
+      outline: 3px solid rgba(59,130,246,0.14);
+      outline-offset: 3px;
+    }
+
+    /* Mobile: reduzir ainda mais para caber em telas pequenas */
+    @media (max-width: 480px) {
+      .tabs { gap: 6px; padding: 6px 6px; margin-bottom: 10px; }
+      .tab-btn {
+        padding: 5px 8px;
+        font-size: 0.82rem;
+        min-width: 56px;
+        max-width: 92px;
+      }
+      /* Allow labels to wrap to 2 lines naturally */
+      .tab-btn { line-height: 1.05; }
+      /* Slightly larger active shadow on small screens for better contrast */
+      .tab-btn.active { box-shadow: 0 10px 26px rgba(5,117,230,0.20); }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+      .tab-btn {
+        padding: 4px 6px;
+        font-size: 0.78rem;
+        min-width: 48px;
+        max-width: 86px;
+      }
+    }
+    </style>
 </body>
 </html>
