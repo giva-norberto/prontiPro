@@ -54,6 +54,24 @@ function mapearElementos() {
     elementos.inputIntervalo = document.getElementById('intervalo-atendimento');
     elementos.btnConvite = document.getElementById('btn-convite');
     elementos.permitirAgendamentoMultiplo = document.getElementById('permitir-agendamento-multiplo');
+    // NOVOS CAMPOS ABA COMISSÃO
+    elementos.comissaoPadrao = document.getElementById('comissao-padrao');
+    elementos.comissaoServicosLista = document.getElementById('comissao-servicos-lista'); // campo container da lista de comissões por serviço
+
+    // --- Adição: garantir binding do select de agenda especial assim que os elementos estiverem mapeados ---
+    // Função definida abaixo (atualizarAreasAgendaEspecial)
+    if (elementos.agendaTipo) {
+        elementos.agendaTipo.addEventListener('change', atualizarAreasAgendaEspecial);
+        // inicializa o estado das áreas (mes / intervalo) com base no valor atual do select
+        atualizarAreasAgendaEspecial();
+    }
+}
+
+// Função isolada para mostrar/ocultar as áreas da aba "Agenda Especial"
+function atualizarAreasAgendaEspecial() {
+    if (!elementos.agendaTipo) return;
+    if (elementos.agendaMesArea) elementos.agendaMesArea.style.display = elementos.agendaTipo.value === "mes" ? "block" : "none";
+    if (elementos.agendaIntervaloArea) elementos.agendaIntervaloArea.style.display = elementos.agendaTipo.value === "intervalo" ? "block" : "none";
 }
 
 async function garantirPerfilDoDono() {
@@ -128,19 +146,22 @@ function setupPerfilTabs() {
     const tabServicos = document.getElementById('tab-servicos');
     const tabHorarios = document.getElementById('tab-horarios');
     const tabAgendaEspecial = document.getElementById('tab-agenda-especial');
+    const tabComissao = document.getElementById('tab-comissao');
     const contentServicos = document.getElementById('tab-content-servicos');
     const contentHorarios = document.getElementById('tab-content-horarios');
     const contentAgendaEspecial = document.getElementById('tab-content-agenda-especial');
-    if (!tabServicos || !tabHorarios || !tabAgendaEspecial) return;
+    const contentComissao = document.getElementById('tab-content-comissao');
+    if (!tabServicos || !tabHorarios || !tabAgendaEspecial || !tabComissao) return;
     const setActiveTab = (activeTab, activeContent) => {
-        [tabServicos, tabHorarios, tabAgendaEspecial].forEach(t => t.classList.remove('active'));
-        [contentServicos, contentHorarios, contentAgendaEspecial].forEach(c => c.classList.remove('active'));
+        [tabServicos, tabHorarios, tabAgendaEspecial, tabComissao].forEach(t => t.classList.remove('active'));
+        [contentServicos, contentHorarios, contentAgendaEspecial, contentComissao].forEach(c => c.classList.remove('active'));
         activeTab.classList.add('active');
         activeContent.classList.add('active');
     };
     tabServicos.onclick = () => setActiveTab(tabServicos, contentServicos);
     tabHorarios.onclick = () => setActiveTab(tabHorarios, contentHorarios);
     tabAgendaEspecial.onclick = () => setActiveTab(tabAgendaEspecial, contentAgendaEspecial);
+    tabComissao.onclick = () => setActiveTab(tabComissao, contentComissao);
     if (elementos.agendaTipo) {
         elementos.agendaTipo.onchange = function () {
             if(elementos.agendaMesArea) elementos.agendaMesArea.style.display = this.value === "mes" ? "block" : "none";
@@ -208,10 +229,61 @@ async function abrirPerfilProfissional(profissionalId) {
         renderizarServicosNoPerfil(profissional.servicos || []);
         agendaEspecial = profissional.agendaEspecial || [];
         renderizarAgendaEspecial();
+        // Preencher comissão padrão
+        if (elementos.comissaoPadrao) {
+            elementos.comissaoPadrao.value = profissional.comissaoPadrao !== undefined ? profissional.comissaoPadrao : "";
+        }
+        // Preencher lista de campos comissão por serviço
+        renderizarComissaoServicos(profissional);
+
+        // --- Garantir estado correto da área Agenda Especial ao abrir o perfil ---
+        atualizarAreasAgendaEspecial();
+
         elementos.modalPerfilProfissional.classList.add('show');
     } catch (error) {
         await showAlert("Erro", "Não foi possível abrir o perfil do profissional.");
     }
+}
+
+function renderizarComissaoServicos(profissional) {
+    const container = elementos.comissaoServicosLista;
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!servicosDisponiveis || servicosDisponiveis.length === 0) {
+        container.innerHTML = '<div style="color:#aaa;">Nenhum serviço cadastrado.</div>';
+        return;
+    }
+
+    // Preenche valores já definidos pelo profissional
+    const comissoes = profissional?.comissaoPorServico || {};
+
+    servicosDisponiveis.forEach(servico => {
+        const linha = document.createElement('div');
+        linha.style.display = 'flex';
+        linha.style.alignItems = 'center';
+        linha.style.gap = '12px';
+        linha.style.marginBottom = '6px';
+
+        const label = document.createElement('span');
+        label.textContent = servico.nome;
+        label.style.flex = '1';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '100';
+        input.step = '1';
+        input.style.width = '80px';
+        input.value = comissoes[servico.id] !== undefined ? comissoes[servico.id] : '';
+        input.className = 'input-comissao-servico';
+        input.setAttribute('data-servico-id', servico.id);
+
+        linha.appendChild(label);
+        linha.appendChild(input);
+        linha.appendChild(document.createTextNode('%'));
+        container.appendChild(linha);
+    });
 }
 
 async function carregarDadosProfissional(profissionalId) {
@@ -239,6 +311,7 @@ async function carregarDadosProfissional(profissionalId) {
     }
 }
 
+// ----------- ÚNICA MODIFICAÇÃO: SOMENTE O TÍTULO DO SERVIÇO, SEM VALORES -----------
 function renderizarServicosNoPerfil(servicosSelecionados = []) {
     if(!elementos.servicosLista) return;
     elementos.servicosLista.innerHTML = "";
@@ -250,12 +323,14 @@ function renderizarServicosNoPerfil(servicosSelecionados = []) {
         const div = document.createElement("div");
         div.className = "servico-item";
         div.setAttribute('data-servico-id', servico.id);
-        div.innerHTML = `<div class="servico-nome">${servico.nome}</div><div class="servico-preco">R$ ${Number(servico.preco || 0).toFixed(2)}</div>`;
+        // SOMENTE NOME, sem valores!
+        div.innerHTML = `<div class="servico-nome">${servico.nome}</div>`;
         if (servicosSelecionados.includes(servico.id)) div.classList.add('selected');
         div.addEventListener('click', () => div.classList.toggle('selected'));
         elementos.servicosLista.appendChild(div);
     });
 }
+// ----------- FIM MODIFICAÇÃO -----------
 
 function renderizarHorarios(horariosDataCompleta = {}) {
     if(!elementos.horariosLista) return;
@@ -363,17 +438,44 @@ async function adicionarAgendaEspecial() {
         agendaEspecial.push({ tipo: 'mes', mes: elementos.agendaMes.value });
     } else {
         if (!elementos.agendaInicio.value || !elementos.agendaFim.value) return await showAlert("Aviso", "Informe o intervalo de datas.");
+        // validação adicional: início <= fim
+        if (elementos.agendaInicio.value > elementos.agendaFim.value) {
+            return await showAlert("Atenção", "A data inicial não pode ser posterior à data final.");
+        }
         agendaEspecial.push({ tipo: 'intervalo', inicio: elementos.agendaInicio.value, fim: elementos.agendaFim.value });
     }
     renderizarAgendaEspecial();
 }
 
+// ======================
+// SALVAR PERFIL PROFISSIONAL COM COMISSÃO
+// ======================
 async function salvarPerfilProfissional() {
     try {
         const servicosSelecionados = Array.from(document.querySelectorAll('.servico-item.selected')).map(item => item.getAttribute('data-servico-id'));
         const horarios = coletarHorarios();
+
+        // Comissão padrão
+        let comissaoPadrao = elementos.comissaoPadrao && elementos.comissaoPadrao.value !== "" ? Number(elementos.comissaoPadrao.value) : null;
+        // Comissão por serviço (via campos)
+        let comissaoPorServico = {};
+        if (elementos.comissaoServicosLista) {
+            elementos.comissaoServicosLista.querySelectorAll('.input-comissao-servico').forEach(input => {
+                const servicoId = input.getAttribute('data-servico-id');
+                const valor = input.value.trim();
+                if (valor !== '') {
+                    comissaoPorServico[servicoId] = Number(valor);
+                }
+            });
+        }
+
         const profissionalRef = doc(db, "empresarios", empresaId, "profissionais", profissionalAtual);
-        await updateDoc(profissionalRef, { servicos: servicosSelecionados, agendaEspecial: agendaEspecial });
+        await updateDoc(profissionalRef, {
+            servicos: servicosSelecionados,
+            agendaEspecial: agendaEspecial,
+            comissaoPadrao: comissaoPadrao,
+            comissaoPorServico: comissaoPorServico
+        });
         const horariosRef = doc(db, "empresarios", empresaId, "profissionais", profissionalAtual, "configuracoes", "horarios");
         await setDoc(horariosRef, horarios, { merge: true });
         if(elementos.modalPerfilProfissional) elementos.modalPerfilProfissional.classList.remove('show');
