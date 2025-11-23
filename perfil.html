@@ -21,7 +21,6 @@
         --border-color: #e2e8f0;
         --input-bg: #f8fafc;
         --shadow: 0 8px 32px rgba(30, 41, 59, 0.06);
-        --shadow-hover: 0 12px 34px rgba(79,70,229,0.09);
     }
     body {
       font-family: 'Inter', Arial, sans-serif;
@@ -51,7 +50,7 @@
       transition: box-shadow 0.18s;
     }
     .form-card:hover {
-      box-shadow: var(--shadow-hover);
+      box-shadow: 0 14px 34px rgba(79,70,229,0.09);
     }
     .header-section {
       display: flex;
@@ -142,7 +141,7 @@
       font-weight: 600;
       display: block;
     }
-    .form-group input[type="text"], .form-group textarea, #selectEmpresa, .form-group input[type="number"] {
+    .form-group input[type="text"], .form-group textarea, #selectEmpresa, .form-group input[type="number"], .form-group select {
       border: 1.6px solid var(--border-color);
       border-radius: 10px;
       padding: 13px 14px;
@@ -154,7 +153,7 @@
       box-sizing: border-box;
       margin-top: 3px;
     }
-    .form-group input[type="text"]:focus, .form-group input[type="number"]:focus, .form-group textarea:focus, #selectEmpresa:focus {
+    .form-group input[type="text"]:focus, .form-group input[type="number"]:focus, .form-group textarea:focus, #selectEmpresa:focus, .form-group select:focus {
       border-color: #6366f1;
       outline: none;
       box-shadow: 0 0 0 2px #6366f130;
@@ -233,6 +232,16 @@
       <form id="form-perfil">
         <div class="form-section">
           <h3>Informações do Negócio</h3>
+          <!-- CAMPO TIPO DE EMPRESA ADICIONADO -->
+          <div class="form-group">
+            <label for="tipoEmpresa"><i class="fa-solid fa-chart-pie"></i> Tipo do Negócio</label>
+            <select id="tipoEmpresa">
+              <option value="estetica">Estética / Salão / Barbearia</option>
+              <option value="pets">Pet Shop</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+          <!-- FIM campo tipo de empresa -->
           <div class="form-group">
             <label for="nomeNegocio">Nome do Negócio</label>
             <input type="text" id="nomeNegocio" placeholder="Ex: Barbearia do João" required>
