@@ -12,73 +12,59 @@
 
   <style>
     :root {
-        --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100% );
         --primary-color: #4f46e5;
-        --primary-color-dark: #4338ca;
         --card-bg: #ffffff;
-        --text-main: #212338;
+        --text-main: #1e293b;
         --text-secondary: #64748b;
         --border-color: #e2e8f0;
         --input-bg: #f8fafc;
-        --shadow: 0 8px 32px rgba(30, 41, 59, 0.06);
+        --shadow: 0 4px 20px rgba(0,0,0,0.06);
     }
     body {
       font-family: 'Inter', Arial, sans-serif;
       background: var(--gradient-primary);
       margin: 0;
       color: var(--text-main);
-      min-height: 100vh;
-      width: 100vw;
-      box-sizing: border-box;
+      display: flex;
     }
     .main-content {
+      margin-left: 270px;
+      padding: 32px;
+      flex-grow: 1;
       min-height: 100vh;
-      width: 100vw;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 36px 0;
     }
     .form-card {
       background: var(--card-bg);
-      border-radius: 22px;
-      max-width: 480px;
-      width: 99vw;
+      border-radius: 20px;
       box-shadow: var(--shadow);
-      padding: 36px 36px 16px 36px;
+      padding: 32px 28px;
+      max-width: 700px;
       margin: 0 auto;
-      transition: box-shadow 0.18s;
-    }
-    .form-card:hover {
-      box-shadow: 0 14px 34px rgba(79,70,229,0.09);
     }
     .header-section {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
       margin-bottom: 28px;
-      text-align: center;
+      flex-wrap: wrap;
     }
     .header-content h1 {
-      font-size: 2.15rem;
-      margin: 0 0 7px 0;
+      font-size: 1.9rem;
+      margin: 0 0 6px 0;
       color: var(--text-main);
       font-weight: 800;
-      letter-spacing: -0.7px;
-      line-height: 1.17;
     }
     .header-content p {
-      margin: 0 0 2px 0;
+      margin: 0;
       color: var(--text-secondary);
-      font-size: 1.09rem;
-      font-weight: 500;
+      font-size: 1rem;
     }
     .header-actions {
       display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 16px 0 0 0;
+      align-items: center;
+      gap: 12px;
     }
     .btn-new, .btn-submit, .btn-copy, .btn-open, .btn-upload {
       display: inline-flex;
@@ -86,120 +72,137 @@
       gap: 8px;
       border: none;
       border-radius: 10px;
-      padding: 10px 22px;
-      font-size: 1.09rem;
+      padding: 10px 18px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
-      box-shadow: 0 2px 12px #6366f11a;
-      transition: background 0.2s, box-shadow 0.14s;
+      transition: all 0.2s;
     }
-    .btn-new { background: var(--primary-color); color: #fff; }
-    .btn-new:hover { background: var(--primary-color-dark);}
-    .btn-submit { background: #2563eb; color: #fff; }
-    .btn-submit:hover { background: #3449f5; }
+    .btn-new {
+      background-color: var(--primary-color) !important;
+      color: white !important;
+    }
+    .btn-new:hover {
+      background-color: #4338ca !important;
+    }
+    .btn-submit {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+    .btn-submit:hover {
+      background-color: #4338ca;
+    }
     .btn-copy, .btn-open {
       background: #f9fafb;
       color: var(--primary-color);
       border: 1px solid var(--border-color);
-      padding: 7px 16px;
-      font-size: 1em;
-      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
     }
     .btn-copy:hover, .btn-open:hover {
       background: #eef2ff;
-      border-color: #6366f1;
-      color: #6366f1;
     }
     .btn-upload {
-      background: #eef2ff;
+      background: #f9fafb;
       color: #374151;
-      border: 1.5px dashed #cbd5e1;
-      padding: 8px 20px;
+      border: 1px dashed #cbd5e1;
+      padding: 10px 16px;
+      font-size: 0.95rem;
     }
     .btn-upload:hover {
-      background: #e0e7ff;
+      background: #eef2ff;
       border-color: var(--primary-color);
       color: var(--primary-color);
     }
     .form-section h3 {
-      margin: 18px 0 20px 0;
-      font-size: 1.27em;
-      color: #2563eb;
-      font-weight: 700;
-      letter-spacing: -0.4px;
-      padding-bottom: 7px;
-      border-bottom: 1.2px solid #e0e7ff;
+      margin: 24px 0 18px 0;
+      font-size: 1.2em;
+      color: var(--primary-color);
+      font-weight: 600;
+      padding-bottom: 8px;
+      border-bottom: 1.5px solid var(--border-color);
     }
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
     .form-group label {
-      font-size: 1.09em;
+      font-size: 1em;
       color: var(--text-main);
-      margin-bottom: 7px;
-      font-weight: 600;
+      margin-bottom: 8px;
+      font-weight: 500;
       display: block;
     }
-    .form-group input[type="text"], .form-group textarea, #selectEmpresa, .form-group input[type="number"], .form-group select {
-      border: 1.6px solid var(--border-color);
+    .form-group input[type="text"],
+    .form-group textarea,
+    #selectEmpresa,
+    .form-group input[type="number"] {
+      border: 1.5px solid var(--border-color);
       border-radius: 10px;
-      padding: 13px 14px;
-      font-size: 1.08em;
+      padding: 12px 14px;
+      font-size: 1em;
       background: var(--input-bg);
-      color: #202338;
+      color: var(--text-main);
       transition: border 0.2s, box-shadow 0.2s;
       width: 100%;
       box-sizing: border-box;
-      margin-top: 3px;
     }
-    .form-group input[type="text"]:focus, .form-group input[type="number"]:focus, .form-group textarea:focus, #selectEmpresa:focus, .form-group select:focus {
-      border-color: #6366f1;
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group textarea:focus,
+    #selectEmpresa:focus {
+      border-color: var(--primary-color);
       outline: none;
-      box-shadow: 0 0 0 2px #6366f130;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
     }
     .form-actions {
       text-align: right;
-      margin-top: 30px;
+      margin-top: 32px;
     }
-    .logo-upload-container {
-      display: flex; align-items: center; gap: 17px; margin-bottom: 12px;
-    }
-    .logo-upload-container img#logo-preview {
-      width: 80px; height: 80px; min-width:80px;
-      border-radius: 50%; object-fit: cover;
-      border:2.6px solid #dee3fe; background: #f7f7fd;
-      box-shadow: 0 1px 9px #6366f109;
-    }
-    .logo-upload-actions{display:flex;flex-direction:column;gap:6px;}
-    /* LINK DA VITRINE */
     .vitrine-link-container {
-      display: flex; gap:11px; align-items: center;
-      background: #eef2ff; border-radius: 11px; border:1.2px solid #dae2fd;
-      padding:11px 14px; margin-top:1px; margin-bottom:2px;
-      font-size:1.05em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--input-bg);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-color);
     }
     .vitrine-url {
-      color: #295aff; font-weight:600; background: transparent; border:none;
-      flex:1; word-break:break-all; cursor:pointer; padding:0; font-size:1.07em;
+      font-size: 0.95em;
+      color: #2563eb;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      padding: 0;
+      flex-grow: 1;
     }
-    .vitrine-actions button, .vitrine-actions a {
-      min-width: 36px;
-      min-height: 36px;
-      font-size: 1.09em;
-      margin: 0 2px;
+    .logo-upload-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    @media (max-width: 900px){
+    .logo-upload-container img#logo-preview {
+      width: 80px;
+      height: 80px;
+      min-width: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+    }
+    @media (max-width: 900px) {
       body { flex-direction: column; }
-      .main-content { padding: 14px 0;}
-      .form-card { padding: 16px 7px; border-radius: 16px; max-width: 99vw;}
-      .header-section h1 { font-size: 1.29em;}
-    }
-    @media(max-width:480px){
-      .form-card {padding:8px 3px;}
-      .logo-upload-container img#logo-preview { width: 54px; height: 54px;}
-      .vitrine-link-container {font-size:0.99em;}
-      .header-content h1 { font-size: 1.07em;}
+      .main-content { margin-left: 0; padding: 16px; }
+      .header-section { flex-direction: column; align-items: stretch; }
+      .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+      .header-actions .btn-new {
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -221,6 +224,7 @@
           </button>
         </div>
       </div>
+
       <div class="form-group" id="empresa-selector-group" style="display:none;">
         <label for="selectEmpresa"><i class="fa-solid fa-building"></i> Selecione sua empresa:</label>
         <select id="selectEmpresa"></select>
@@ -229,19 +233,10 @@
       <div id="mensagem-free" style="display:none; margin:20px auto; max-width:560px; background:#e0e7ff; color:#3730a3; border-radius:10px; padding:12px 18px; text-align:center; font-weight:bold;">
         Plano atual: FREE
       </div>
+
       <form id="form-perfil">
         <div class="form-section">
           <h3>Informações do Negócio</h3>
-          <!-- CAMPO TIPO DE EMPRESA ADICIONADO -->
-          <div class="form-group">
-            <label for="tipoEmpresa"><i class="fa-solid fa-chart-pie"></i> Tipo do Negócio</label>
-            <select id="tipoEmpresa">
-              <option value="estetica">Estética / Salão / Barbearia</option>
-              <option value="pets">Pet Shop</option>
-              <option value="outros">Outros</option>
-            </select>
-          </div>
-          <!-- FIM campo tipo de empresa -->
           <div class="form-group">
             <label for="nomeNegocio">Nome do Negócio</label>
             <input type="text" id="nomeNegocio" placeholder="Ex: Barbearia do João" required>
@@ -281,7 +276,7 @@
             <textarea id="descricao" rows="3" placeholder="Uma breve descrição do seu negócio."></textarea>
           </div>
           <div class="form-group">
-            <label for="localizacao">Localização (Endereço)</label>
+            <label for="localizacao">Localização (Endereço )</label>
             <input type="text" id="localizacao" placeholder="Ex: Rua das Flores, 123, São Paulo">
           </div>
           <div class="form-group">
@@ -292,6 +287,7 @@
             <label for="chavePix">Chave PIX (Opcional)</label>
             <input type="text" id="chavePix" placeholder="Digite sua chave PIX">
           </div>
+          <!-- Campo 'freeEmDias' removido -->
         </div>
         <div class="form-actions">
           <button type="submit" class="btn-submit">Salvar Todas as Configurações</button>
