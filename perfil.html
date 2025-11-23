@@ -4,213 +4,211 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meu Perfil e Configurações - Pronti IA</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="style.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     :root {
-        --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-        --primary-color: #4f46e5;
-        --card-bg: #ffffff;
-        --text-main: #1e293b;
-        --text-secondary: #64748b;
-        --border-color: #e2e8f0;
-        --input-bg: #f8fafc;
-        --shadow: 0 4px 20px rgba(0,0,0,0.06);
+      --color-brand: #4f46e5;
+      --color-brand-dark: #4338ca;
+      --gradient-main: linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);
+      --color-text: #19213a;
+      --color-text-secondary: #64748b;
+      --shadow-main: 0 4px 24px #444++1a;
+      --border-main: #e5e7eb;
+      --input-bg: #f8fafc;
     }
-
     body {
+      min-height: 100vh;
       font-family: 'Inter', Arial, sans-serif;
-      background: var(--gradient-primary);
+      background: var(--gradient-main);
       margin: 0;
-      color: var(--text-main);
-      display: flex;
-      min-height: 100vh;
+      color: var(--color-text);
+      padding:0;
+      box-sizing: border-box;
     }
-
     .main-content {
-      margin-left: 270px;
-      padding: 32px;
-      flex-grow: 1;
+      width: 100vw;
       min-height: 100vh;
-    }
-
-    .form-card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 32px 28px;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .header-section {
       display: flex;
-      justify-content: space-between;
       align-items: flex-start;
-      gap: 18px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
+      justify-content: center;
+      padding: 36px 0;
     }
-
+    .form-card {
+      background: #fff;
+      border-radius: 20px;
+      max-width: 450px;
+      width: 98vw;
+      box-shadow: 0 8px 36px #4f46e515;
+      padding: 36px 34px 12px 34px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    .header-section {
+      text-align: center;
+      margin-bottom: 25px;
+    }
     .header-content h1 {
-      font-size: 1.9rem;
-      margin: 0 0 6px 0;
-      color: var(--text-main);
+      font-size: 2.1rem;
       font-weight: 800;
+      margin: 0 0 7px 0;
+      color: var(--color-text);
+      letter-spacing:-.4px;
     }
     .header-content p {
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: 1rem;
+      color: var(--color-text-secondary);
+      font-size: 1.09em;
+      font-weight: 500;
+      margin-bottom:0;
     }
-
     .header-actions {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 19px;
+      margin-bottom: 0;
     }
-
     .btn-new, .btn-submit, .btn-copy, .btn-open, .btn-upload {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       border: none;
       border-radius: 10px;
-      padding: 10px 18px;
-      font-size: 1rem;
+      padding: 10px 22px;
+      font-size: 1.08rem;
       font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 2px 8px #4f46e511;
       text-decoration: none;
-      transition: all 0.2s;
+      transition: background 0.2s, box-shadow 0.14s;
     }
-
     .btn-new {
-      background-color: var(--primary-color) !important;
-      color: white !important;
-    }
-    .btn-new:hover {
-      background-color: #4338ca !important;
-    }
-
-    .btn-submit {
-      background-color: var(--primary-color);
+      background: var(--color-brand);
       color: #fff;
     }
-
-    .btn-submit:hover {
-      background-color: #4338ca;
+    .btn-new:hover {
+      background: var(--color-brand-dark); 
     }
-
+    .btn-submit {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-submit:hover {
+      background: #3449f5;
+    }
     .btn-copy, .btn-open {
-      background: #f9fafb;
-      color: var(--primary-color);
-      border: 1px solid var(--border-color);
-      padding: 8px 14px;
-      font-size: 0.95rem;
+      background: #f8fafc;
+      color: var(--color-brand);
+      border: 1px solid var(--border-main);
+      padding: 7px 16px;
+      font-size: 1em;
+      border-radius: 7px;
     }
     .btn-copy:hover, .btn-open:hover {
       background: #eef2ff;
+      border-color: #6366f1;
+      color: #6366f1;
     }
-
     .btn-upload {
-      background: #f9fafb;
+      background: #eef2ff;
       color: #374151;
-      border: 1px dashed #cbd5e1;
-      padding: 10px 16px;
-      font-size: 0.95rem;
+      border: 1.5px dashed #cbd5e1;
+      padding: 7px 19px;
     }
     .btn-upload:hover {
-      background: #eef2ff;
-      border-color: var(--primary-color);
-      color: var(--primary-color);
+      background: #e0e7ff;
+      border-color: var(--color-brand);
+      color: var(--color-brand);
     }
-
     .form-section h3 {
-      margin: 24px 0 18px 0;
-      font-size: 1.2em;
-      color: var(--primary-color);
-      font-weight: 600;
+      margin: 18px 0 20px 0;
+      font-size: 1.25em;
+      color: #2563eb;
+      font-weight: 700;
+      letter-spacing: -.4px;
       padding-bottom: 8px;
-      border-bottom: 1.5px solid var(--border-color);
+      border-bottom: 1.2px solid #e5e7eb;
     }
-
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
-
     .form-group label {
-      font-size: 1em;
-      color: var(--text-main);
-      margin-bottom: 8px;
-      font-weight: 500;
+      font-size: 1.07em;
+      color: var(--color-text);
+      margin-bottom: 4px;
+      font-weight: 600;
       display: block;
     }
-
-    .form-group input[type="text"],
-    .form-group textarea,
-    #selectEmpresa,
-    .form-group select,
-    .form-group input[type="number"] {
-      border: 1.5px solid var(--border-color);
+    .form-group input[type="text"], .form-group textarea, #selectEmpresa, .form-group input[type="number"] {
+      border: 1.5px solid var(--border-main);
       border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 1em;
-      background: var(--input-bg);
-      color: var(--text-main);
+      padding: 13px 13px;
+      font-size: 1.08em;
+      background: #f8fafc;
+      color:#19213a;
+      width:100%;
+      margin-top:4px;
       transition: border 0.2s, box-shadow 0.2s;
-      width: 100%;
-      box-sizing: border-box;
     }
-
     .form-group input[type="text"]:focus,
-    .form-group select:focus,
     .form-group input[type="number"]:focus,
-    .form-group textarea:focus {
-      border-color: var(--primary-color);
+    .form-group textarea:focus,
+    #selectEmpresa:focus {
+      border-color: var(--color-brand);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+      box-shadow: 0 0 0 2px #6366f120;
     }
-
     .form-actions {
       text-align: right;
-      margin-top: 32px;
+      margin-top: 30px;
     }
-
-    @media (max-width: 900px) {
-      body { flex-direction: column; }
-      .main-content { margin-left: 0; padding: 16px; }
-      .header-section { flex-direction: column; align-items: stretch; gap: 12px; }
-      .header-actions { flex-direction: column; align-items: stretch; width: 100%; }
-      .header-actions .btn-new { width: 100%; justify-content: center; }
-      .form-card { padding: 22px 18px; }
-      h1 { font-size: 1.6rem !important; }
+    .logo-upload-container {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 10px;
+    }
+    .logo-upload-container img#logo-preview {
+      width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #ecefff;
+      border:2.8px solid #dee3fe; box-shadow: 0 1px 6px #6366f11a;
+    }
+    .logo-upload-actions{display:flex;flex-direction:column;gap:6px;}
+    /* LINK DA VITRINE */
+    .vitrine-link-container {
+      display: flex; gap:10px; align-items: center;
+      background: #eef2ff; border-radius: 9px; border:1px solid #dae2fd;
+      padding:10px 10px; margin-top:4px;margin-bottom:5px;
+      font-size:1.03em;
+    }
+    .vitrine-url {
+      color: #295aff; font-weight:600; background: transparent; border:none; flex:1;word-break:break-all;cursor:pointer;
+      padding:0;
+      font-size:1.03em;
+    }
+    .btn-copy, .btn-open {
+      min-width: 36px; min-height: 36px; margin:0 2px;
+    }
+    /* MOBILE */
+    @media(max-width:600px){
+      .form-card{max-width:99vw;padding:20px 6px;}
+      .logo-upload-container img#logo-preview{width:54px;height:54px;}
+      .header-content h1{font-size:1.11em;}
+      .header-section{margin-bottom:16px;}
     }
   </style>
 </head>
-
 <body>
-  <div id="sidebar-placeholder"></div>
-
   <main class="main-content">
     <div class="form-card">
-
       <div class="header-section">
         <div class="header-content">
           <h1 id="main-title">Meu Perfil e Configurações</h1>
-          <p>Defina aqui todas as informações do seu negócio.</p>
+          <p>Defina e personalize as informações do seu negócio.</p>
         </div>
-
         <div class="header-actions">
-          <a id="btn-abrir-vitrine" href="#" target="_blank" class="btn-new" style="display:none;">
-            <i class="fa-solid fa-store"></i> Abrir Minha Vitrine
+          <a id="btn-abrir-vitrine" href="#" target="_blank" class="btn-new" style="display: none;">
+            <i class="fa-solid fa-store"></i> Vitrine
           </a>
-
           <button id="btn-criar-nova-empresa" class="btn-new" type="button">
-            <i class="fa-solid fa-plus"></i> Criar Nova Empresa
+            <i class="fa-solid fa-plus"></i> Novo Negócio
           </button>
         </div>
       </div>
@@ -219,60 +217,37 @@
         <label for="selectEmpresa"><i class="fa-solid fa-building"></i> Selecione sua empresa:</label>
         <select id="selectEmpresa"></select>
       </div>
-
       <div id="mensagem-cadastro-sucesso"></div>
-
-      <div id="mensagem-free"
-        style="display:none; margin:20px auto; max-width:560px; background:#e0e7ff; color:#3730a3; border-radius:10px; padding:12px 18px; text-align:center; font-weight:bold;">
-        Plano atual: FREE
-      </div>
 
       <form id="form-perfil">
         <div class="form-section">
-          <h3>Informações do Negócio</h3>
-
-          <!-- Campo Tipo de Empresa -->
-          <div class="form-group">
-            <label for="tipoEmpresa">Tipo do Negócio</label>
-            <select id="tipoEmpresa" required>
-              <option value="">Selecione...</option>
-              <option value="estetica">Estética / Salão / Barbearia</option>
-              <option value="pets">Pet Shop</option>
-              <option value="outros">Outros</option>
-            </select>
-          </div>
-
+          <h3>Informações Básicas</h3>
           <div class="form-group">
             <label for="nomeNegocio">Nome do Negócio</label>
             <input type="text" id="nomeNegocio" placeholder="Ex: Barbearia do João" required>
           </div>
-
           <div class="form-group">
-            <label for="slug">Link Personalizado (Apelido)</label>
+            <label for="slug">Apelido / Link Personalizado</label>
             <input type="text" id="slug" placeholder="Ex: barbearia-do-joao">
           </div>
-
-          <div class="form-group" id="container-link-vitrine" style="display:none;">
-            <label>Link da sua Vitrine Pública</label>
+          <div class="form-group" id="container-link-vitrine" style="display: none;">
+            <label>Link da Vitrine Pública <i class="fa fa-globe"></i></label>
             <div class="vitrine-link-container">
               <div class="vitrine-url" id="url-vitrine-display"></div>
               <div class="vitrine-actions">
-                <button type="button" id="btn-copiar-link" class="btn-copy">
-                  <i class="fa-regular fa-copy"></i> Copiar
+                <button type="button" id="btn-copiar-link" class="btn-copy" title="Copiar link">
+                  <i class="fa-regular fa-copy"></i>
                 </button>
-                <a href="#" target="_blank" class="btn-open" id="btn-abrir-vitrine-inline">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir
+                <a href="#" target="_blank" id="btn-abrir-vitrine-inline" class="btn-open" title="Abrir vitrine">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
               </div>
             </div>
           </div>
-
           <div class="form-group">
-            <label for="logoNegocio">Logotipo do Negócio (Opcional)</label>
+            <label for="logoNegocio">Logotipo</label>
             <div class="logo-upload-container">
-              <img id="logo-preview"
-                src="https://placehold.co/80x80/eef2ff/4f46e5?text=Logo"
-                alt="Pré-visualização do logotipo">
+              <img id="logo-preview" src="https://placehold.co/80x80/eef2ff/4f46e5?text=Logo" alt="Pré-visualização do logotipo">
               <div class="logo-upload-actions">
                 <input type="file" id="logoNegocio" accept="image/png, image/jpeg" style="display:none;">
                 <button type="button" id="btn-upload-logo" class="btn-upload">
@@ -281,62 +256,31 @@
               </div>
             </div>
           </div>
-
           <div class="form-group">
             <label for="descricao">Descrição Curta</label>
             <textarea id="descricao" rows="3" placeholder="Uma breve descrição do seu negócio."></textarea>
           </div>
-
           <div class="form-group">
-            <label for="localizacao">Localização (Endereço)</label>
+            <label for="localizacao">Endereço</label>
             <input type="text" id="localizacao" placeholder="Ex: Rua das Flores, 123, São Paulo">
           </div>
-
           <div class="form-group">
             <label for="horarioFuncionamento">Horário de Funcionamento</label>
             <input type="text" id="horarioFuncionamento" placeholder="Ex: Seg a Sex, 9h - 18h">
           </div>
-
           <div class="form-group">
-            <label for="chavePix">Chave PIX (Opcional)</label>
+            <label for="chavePix">Chave PIX</label>
             <input type="text" id="chavePix" placeholder="Digite sua chave PIX">
           </div>
         </div>
-
         <div class="form-actions">
-          <button type="submit" class="btn-submit">Salvar Todas as Configurações</button>
+          <button type="submit" class="btn-submit">
+            <i class="fa fa-floppy-disk"></i> Salvar Todas as Configurações
+          </button>
         </div>
       </form>
     </div>
   </main>
-
-  <!-- MODAL DE CONFIRMAÇÃO PRONTI -->
-  <div id="modal-confirmacao-pronti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(24,27,124,.35);align-items:center;justify-content:center;">
-    <div style="background:#4f46e5;color:#fff;padding:30px 30px 22px 30px;border-radius:18px;max-width:340px;box-shadow:0 2px 20px #0005;margin:auto;position:relative;">
-      <div id="modal-confirmacao-pronti-pergunta" style="font-size:1.16em;font-weight:500;text-align:center;margin-bottom:13px;"></div>
-      <div style="display:flex;justify-content:center;gap:15px;padding-top:8px;">
-        <button id="modal-confirmacao-pronti-ok" style="background:#2563eb;color:#fff;font-weight:600;padding:9px 30px;border-radius:7px;border:none;cursor:pointer;font-size:1em;box-shadow:0 2px 10px #0002;">OK</button>
-        <button id="modal-confirmacao-pronti-cancelar" style="background:#4757d3;color:#fff;font-weight:500;padding:9px 30px;border-radius:7px;border:none;cursor:pointer;font-size:1em;box-shadow:0 2px 8px #0002;">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      fetch('menu-lateral.html')
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById('sidebar-placeholder').innerHTML = html;
-          setTimeout(() => {
-            const links = document.querySelectorAll('.sidebar-links a');
-            links.forEach(link => link.classList.remove('active'));
-            const perfilLink = document.querySelector('.sidebar-links a[href="perfil.html"]');
-            if (perfilLink) perfilLink.classList.add('active');
-          }, 50);
-        });
-    });
-  </script>
-
   <script src="perfil.js" type="module"></script>
 </body>
 </html>
