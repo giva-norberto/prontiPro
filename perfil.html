@@ -136,7 +136,8 @@
     .form-group input[type="text"],
     .form-group textarea,
     #selectEmpresa,
-    .form-group input[type="number"] {
+    .form-group input[type="number"],
+    .form-group select {
       border: 1.5px solid var(--border-color);
       border-radius: 10px;
       padding: 12px 14px;
@@ -150,7 +151,8 @@
     .form-group input[type="text"]:focus,
     .form-group input[type="number"]:focus,
     .form-group textarea:focus,
-    #selectEmpresa:focus {
+    #selectEmpresa:focus,
+    .form-group select:focus {
       border-color: var(--primary-color);
       outline: none;
       box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
@@ -237,6 +239,16 @@
       <form id="form-perfil">
         <div class="form-section">
           <h3>Informações do Negócio</h3>
+          <!-- Campo tipo de empresa incluído conforme solicitado -->
+          <div class="form-group">
+            <label for="tipoEmpresa">Tipo do Negócio</label>
+            <select id="tipoEmpresa">
+              <option value="">Selecione...</option>
+              <option value="estetica">Estética / Salão / Barbearia</option>
+              <option value="pets">Pet Shop</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
           <div class="form-group">
             <label for="nomeNegocio">Nome do Negócio</label>
             <input type="text" id="nomeNegocio" placeholder="Ex: Barbearia do João" required>
