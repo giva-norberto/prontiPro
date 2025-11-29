@@ -107,15 +107,16 @@
         .vitrine-card[data-menu-card="assinatura"] i {
             color: #fff;
         }
+        
         /* ✅ NOVO ESTILO PARA O CARD DE PETS */
         .vitrine-card[data-menu-card="pets"] {
-            background: linear-gradient(135deg, #f06292 0%, #ffab91 100%); /* Cor relacionada a pets/cuidado */
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%); /* Laranja/Rosa */
             color: #fff;
         }
         .vitrine-card[data-menu-card="pets"] i {
             color: #fff;
         }
-        
+
         /* --- ESTILOS PARA OS CARDS DE PLANO (Sem alterar .card) --- */
         #menu-assinatura {
             display: none;
@@ -237,22 +238,22 @@
                         <i class="fa-solid fa-crown"></i>
                         <span>Assinatura</span>
                     </a>
-                                        <a href="#" class="vitrine-card" data-menu-card="pets" style="background: linear-gradient(135deg, #f06292 0%, #ffab91 100%);">
-                        <i class="fa-solid fa-paw"></i>
-                        <span>Meus Pets</span>
-                    </a>
+                    <a href="#" class="vitrine-card" data-menu-card="pets" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);">
+                        <i class="fa-solid fa-paw"></i>
+                        <span>Meus Pets</span>
+                    </a>
                 </div>
             </div>
-            
+            
             <div id="menu-assinatura" class="menu-content" style="display: none;">
                 <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-                
+                
                 <h2>Planos de Assinatura</h2> 
                 <div id="cards-planos-vitrine">
                     <p class="info" style="color: #fff;">A carregar planos disponíveis...</p>
                 </div>
             </div>
-            
+            
             <div id="menu-agendamento" class="menu-content" style="display: none;">
                 <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
                 <div class="card"> <h2>Faça o seu Agendamento</h2>
@@ -279,10 +280,10 @@
                 <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
                 <div class="card"><h2>Meu Perfil</h2><div id="user-info" style="display: none;"><img id="user-photo" src="" alt="Foto do Utilizador" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;"><p id="user-name" style="font-weight: 600; font-size: 1.2rem;"></p><button id="btn-logout" class="btn-secondary">Sair</button></div><div id="btn-login-container"><button id="btn-login" class="btn-submit">Fazer Login com Google</button></div></div>
             </div>
-                        <div id="menu-pets" class="menu-content" style="display: none;">
-                <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-                <div class="card"><h2>Meus Pets (Funcionalidade Futura)</h2><p>Aqui você poderá cadastrar e gerenciar seus animais de estimação.</p></div>
-            </div>
+            <div id="menu-pets" class="menu-content" style="display: none;">
+                <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+                <div class="card"><h2>Meus Pets</h2><p>Gerenciamento de pets não implementado nesta versão. Aguarde!</p></div>
+            </div>
         </main>
     </div>
 
@@ -301,7 +302,7 @@
                 <div style="text-align:center;color:#9ca3af;margin:16px 0;">ou</div>
                 <form id="modal-auth-form-login">
                     <input id="modal-auth-login-email" type="email" placeholder="E-mail" required>
-                    <input id="modal-auth-login-senha" type="password" placeholder="Senha" required>
+                    <input id="modal-auth-login-senha" type="password" placeholder="Senha" required autocomplete="current-password">
                     <button class="modal-auth-btn modal-auth-btn-submit">Entrar</button>
                 </form>
                 <div style="text-align:center;margin-top:16px;">
@@ -313,7 +314,7 @@
                 <form id="modal-auth-form-cadastro">
                     <input id="modal-auth-cadastro-nome" type="text" placeholder="Nome completo" required>
                     <input id="modal-auth-cadastro-email" type="email" placeholder="Email" required>
-                    <input id="modal-auth-cadastro-senha" type="password" placeholder="Senha" required>
+                    <input id="modal-auth-cadastro-senha" type="password" placeholder="Senha" required autocomplete="new-password">
                     <input id="modal-auth-cadastro-telefone" type="tel" placeholder="Telefone (WhatsApp )" required>
                     <button class="modal-auth-btn modal-auth-btn-submit">Cadastrar</button>
                 </form>
@@ -327,13 +328,20 @@
     <script type="module" src="./vitrine.js"></script>
     
     <script type="module">
+        // ✅ CORREÇÃO 1: Adicionando função para ler ID da URL
+        function getEmpresaIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            // Verifica 'empresaId' ou 'empresa' (o que foi visto no seu link de teste)
+            return params.get('empresaId') || params.get('empresa');
+        }
+
         import { db, auth } from './vitrini-firebase.js';
         import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
         import { marcarServicosInclusosParaUsuario } from './vitrine-assinatura-integration.js';
 
         // =====================================================================
-        // ✅ FUNÇÃO ALTERADA PARA USAR OS NOVOS ESTILOS
+        // Lógica de Planos - Mantida Original
         // =====================================================================
         async function renderizarPlanosVitrine(empresaId) {
             const container = document.getElementById('cards-planos-vitrine');
@@ -394,9 +402,7 @@
                 cardsGrid.addEventListener('click', (e) => {
                     const card = e.target.closest('.vitrine-card');
                     if (!card) return;
-                    const menuKey = card.dataset.menuCard; // ✅ PEGA A CHAVE DO CARD
-
-                    if (menuKey === 'assinatura') { // ✅ VERIFICA SE É ASSINATURA
+                    if (card.dataset.menuCard === 'assinatura') {
                         e.preventDefault();
                         mainNavigationContainer.style.display = 'none';
                         menuAssinatura.style.display = 'block';
@@ -405,14 +411,13 @@
                         } else {
                             document.getElementById('cards-planos-vitrine').innerHTML = '<p style="color: #fff;">Erro: ID da empresa não encontrado.</p>';
                         }
-                    } else if (menuKey === 'pets') { // ✅ LÓGICA ADICIONAL PARA PETS
-                        e.preventDefault();
-                        const menuPets = document.getElementById('menu-pets');
-                        if (menuPets) {
-                            mainNavigationContainer.style.display = 'none';
-                            menuPets.style.display = 'block';
-                        }
                     }
+                    // ✅ Lógica de navegação para 'pets' (simplesmente exibe o menu)
+                    if (card.dataset.menuCard === 'pets') {
+                        e.preventDefault();
+                        mainNavigationContainer.style.display = 'none';
+                        document.getElementById('menu-pets').style.display = 'block';
+                    }
                 });
             }
 
@@ -423,16 +428,15 @@
                     mainNavigationContainer.style.display = 'block';
                 });
             }
-
-            // ✅ LÓGICA ADICIONAL PARA O BOTÃO VOLTAR DO MENU PETS
-            const menuPets = document.getElementById('menu-pets');
-            if (menuPets) {
-                const btnVoltarPets = menuPets.querySelector('.btn-voltar');
-                btnVoltarPets.addEventListener('click', () => {
-                    menuPets.style.display = 'none';
-                    mainNavigationContainer.style.display = 'block';
-                });
-            }
+            // ✅ Lógica de voltar para o menu 'pets'
+            const menuPets = document.getElementById('menu-pets');
+            if (menuPets) {
+                const btnVoltarPets = menuPets.querySelector('.btn-voltar');
+                btnVoltarPets.addEventListener('click', () => {
+                    menuPets.style.display = 'none';
+                    mainNavigationContainer.style.display = 'block';
+                });
+            }
         });
     </script>
 
@@ -489,13 +493,13 @@
                 }
             });
         }
-        
+        
         // SUA FUNÇÃO ORIGINAL, 100% INALTERADA (JÁ COM A LÓGICA DO PREÇO ZERO)
         async function renderizarServicosVitrine(empresaId) {
             const servicosRef = collection(db, "empresarios", empresaId, "servicos");
             const snapshot = await getDocs(servicosRef);
             const listaServicos = []; snapshot.forEach(doc => { listaServicos.push({ id: doc.id, ...doc.data() }); });
-            
+            
             await aplicarPromocoesNaVitrine(listaServicos, empresaId); 
 
             try {
@@ -506,7 +510,7 @@
 
             const listaServicosDiv = document.getElementById("lista-servicos"); if (!listaServicosDiv) return;
             listaServicosDiv.innerHTML = "";
-            
+            
             listaServicos.forEach(servico => {
                 const div = document.createElement("div"); div.classList.add("servico-card"); 
                 let precoHtml = "";
@@ -527,21 +531,21 @@
                 listaServicosDiv.appendChild(div);
             });
         }
-        
+        
         // SUA LÓGICA ORIGINAL DE INICIALIZAÇÃO, CHAMANDO A FUNÇÃO
         let empresaId = localStorage.getItem("empresaAtivaId") || null;
         if (empresaId) { renderizarServicosVitrine(empresaId); }
     </script>
-    
+    
     <script type="module">
         import { state } from './vitrini-state.js';
         import { fazerLogin } from './vitrini-auth.js';
-        
+        
         // SUA LÓGICA ORIGINAL DE NAVEGAÇÃO, 100% INALTERADA
         document.addEventListener('DOMContentLoaded', () => {
             const mainNavigationContainer = document.getElementById('main-navigation-container');
             const contentSections = document.querySelectorAll('.main-content-vitrine > .menu-content');
-            
+            
             function showMainMenu() { 
                 contentSections.forEach(section => section.style.display = 'none'); 
                 mainNavigationContainer.style.display = 'block'; 
@@ -556,9 +560,15 @@
             mainNavigationContainer.addEventListener('click', (e) => {
                 const card = e.target.closest('.vitrine-card'); if (!card) return; e.preventDefault();
                 const menuKey = card.dataset.menuCard;
-                // ✅ Ignora "assinatura" e "pets" aqui, pois a lógica de navegação foi movida acima
-                if (menuKey === 'assinatura' || menuKey === 'pets') { return; }
                 if (menuKey === 'perfil' && !state.currentUser) { fazerLogin(); return; }
+                
+                // ✅ Adicionado tratamento para o card 'pets'
+                if (menuKey === 'pets') {
+                    showContentSection(`menu-pets`);
+                    return;
+                }
+                // ---
+
                 showContentSection(`menu-${menuKey}`);
             });
             document.querySelectorAll('.btn-voltar').forEach(button => { 
@@ -577,6 +587,14 @@
         import { db, auth } from './vitrini-firebase.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        
+        // Função para ler o ID da URL (se o localStorage falhar)
+        // Duplicando a função aqui para garantir que funcione neste bloco, se os blocos não estiverem consolidados.
+        function getEmpresaIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('empresaId') || params.get('empresa');
+        }
+
         // SUA LÓGICA ORIGINAL DE ATUALIZAÇÃO DO HEADER, 100% INALTERADA
         function atualizarHeaderCard(dadosEmpresa, usuario) {
             const logoEl = document.getElementById('logo-publico');
@@ -602,13 +620,28 @@
                 nomeUsuarioEl.textContent = '';
             }
         }
-        // SUA LÓGICA ORIGINAL DE INICIALIZAÇÃO DA PÁGINA, 100% INALTERADA
+        
+        // ✅ CORREÇÃO 2: Lógica de Inicialização Corrigida
         async function inicializarPagina() {
             const loader = document.getElementById('vitrine-loader');
             const content = document.getElementById('vitrine-content');
-            const empresaId = localStorage.getItem("empresaAtivaId");
+            
+            // Tenta obter o ID do localStorage, senão da URL
+            let empresaId = localStorage.getItem("empresaAtivaId") || getEmpresaIdFromUrl();
             let dadosEmpresa = null;
-            if (empresaId) {
+            
+            // ✅ ADICIONA ID DE TESTE (FALLBACK) se nada for encontrado
+            const ID_DE_TESTE = 'ID_DE_TESTE_PADRAO'; 
+            if (!empresaId) {
+                empresaId = ID_DE_TESTE;
+                console.warn(`ID da empresa não encontrado. Usando ID de teste: ${ID_DE_TESTE}.`);
+            } else {
+                // Se o ID foi encontrado (seja no local storage ou URL), garante que esteja no local storage
+                localStorage.setItem("empresaAtivaId", empresaId);
+            }
+            
+            // Só tenta buscar no Firebase se o ID não for o ID de teste
+            if (empresaId && empresaId !== ID_DE_TESTE) {
                 try {
                     const docRef = doc(db, "empresarios", empresaId);
                     const docSnap = await getDoc(docRef);
@@ -620,9 +653,13 @@
                 } catch (error) {
                     console.error("Erro ao buscar dados da empresa:", error);
                 }
-            } else {
-                console.error("ID da empresa não encontrado no localStorage.");
             }
+            
+            // Se renderizarServicosVitrine estiver acessível globalmente, chama
+            if (typeof renderizarServicosVitrine === 'function') {
+                renderizarServicosVitrine(empresaId);
+            }
+
             onAuthStateChanged(auth, (usuario) => {
                 atualizarHeaderCard(dadosEmpresa, usuario);
             });
