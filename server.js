@@ -1,145 +1,153 @@
-// ======================================================================
-// Arquivo: server.js (VERSÃO ROBUSTA, LIMPA, SEM MERCADO PAGO, SEM STRIPE)
-// ======================================================================
-
-const express = require('express');
-const admin = require('firebase-admin');
-const app = express();
-
-// --- INICIALIZAÇÃO DO FIREBASE ADMIN ---
-let db;
-try {
-  // Lembre-se de ter o seu arquivo serviceAccountKey.json na mesma pasta
-  const serviceAccount = require('./serviceAccountKey.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-  db = admin.firestore();
-} catch (error) {
-  console.error("❌ Erro ao inicializar Firebase Admin SDK:", error);
-  process.exit(1); // Encerra se não conseguir inicializar
-}
-// -----------------------------------------
-
-app.use(express.static('public')); // Para servir seus arquivos HTML, CSS, JS
-app.use(express.json());
-
-// ======================================================================
-// ENDPOINT: Informa ao front-end o status da empresa (exemplo de uso)
-// ======================================================================
-app.post('/get-status-empresa', async (req, res) => {
-    try {
-        const { userId } = req.body;
-        if (!userId) return res.status(400).json({ error: 'ID do usuário não fornecido.' });
-
-        const empresasRef = db.collection('empresarios');
-        const snapshot = await empresasRef.where('donoId', '==', userId).limit(1).get();
-
-        if (snapshot.empty) {
-            return res.status(404).json({ error: 'Empresa não encontrada.' });
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronti - Serviços</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            --primary-color: #4f46e5;
+            --special-color: #16a34a; 
         }
-        
-        const empresaDoc = snapshot.docs[0];
-        const empresaData = empresaDoc.data();
-
-        let numeroParaValidacao;
-
-        // A fonte da verdade é o campo 'usuariosLicenciados' que você edita no painel admin
-        if (empresaData.usuariosLicenciados !== undefined) {
-            numeroParaValidacao = empresaData.usuariosLicenciados;
-        } else {
-            // Se o campo não existir, usamos a contagem real como um fallback seguro.
-            const profCollectionRef = db.collection('empresarios').doc(empresaDoc.id).collection('profissionais');
-            const profSnap = await profCollectionRef.get();
-            numeroParaValidacao = profSnap.size;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--gradient-primary);
+            color: #333;
+            display: flex;
         }
-
-        res.json({ licencasNecessarias: numeroParaValidacao });
-
-    } catch (error) {
-        console.error("❌ Erro ao buscar status da empresa:", error);
-        res.status(500).json({ error: 'Erro interno no servidor.' });
-    }
-});
-
-// ======================================================================
-// ENDPOINT: CRUD DE SERVIÇOS (exemplo de endpoints)
-// ======================================================================
-
-// Buscar todos os serviços de uma empresa
-app.get('/empresas/:empresaId/servicos', async (req, res) => {
-    try {
-        const { empresaId } = req.params;
-        if (!empresaId) return res.status(400).json({ error: "empresaId não fornecido." });
-
-        const servicosRef = db.collection('empresarios').doc(empresaId).collection('servicos');
-        const snapshot = await servicosRef.get();
-        const servicos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        res.json(servicos);
-    } catch (error) {
-        console.error("❌ Erro ao buscar serviços:", error);
-        res.status(500).json({ error: "Erro ao buscar serviços." });
-    }
-});
-
-// Criar novo serviço
-app.post('/empresas/:empresaId/servicos', async (req, res) => {
-    try {
-        const { empresaId } = req.params;
-        const dados = req.body;
-        if (!empresaId) return res.status(400).json({ error: "empresaId não fornecido." });
-        if (!dados || !dados.nome) return res.status(400).json({ error: "Dados do serviço inválidos ou nome ausente." });
-
-        const servicosRef = db.collection('empresarios').doc(empresaId).collection('servicos');
-        const docRef = await servicosRef.add(dados);
-        res.json({ success: true, id: docRef.id });
-    } catch (error) {
-        console.error("❌ Erro ao criar serviço:", error);
-        res.status(500).json({ error: "Erro ao criar serviço." });
-    }
-});
-
-// Editar serviço existente
-app.put('/empresas/:empresaId/servicos/:servicoId', async (req, res) => {
-    try {
-        const { empresaId, servicoId } = req.params;
-        const dados = req.body;
-        if (!empresaId || !servicoId) return res.status(400).json({ error: "empresaId ou servicoId não fornecido." });
-        if (!dados) return res.status(400).json({ error: "Dados do serviço ausentes." });
-
-        const servicosRef = db.collection('empresarios').doc(empresaId).collection('servicos').doc(servicoId);
-        const docSnap = await servicosRef.get();
-        if (!docSnap.exists) {
-            return res.status(404).json({ error: "Serviço não encontrado." });
+        .main-content { 
+            margin-left: 270px; 
+            padding: 32px; 
+            min-height: 100vh;
+            flex-grow: 1;
         }
-        await servicosRef.update(dados);
-        res.json({ success: true });
-    } catch (error) {
-        console.error("❌ Erro ao editar serviço:", error);
-        res.status(500).json({ error: "Erro ao editar serviço." });
-    }
-});
-
-// Excluir serviço
-app.delete('/empresas/:empresaId/servicos/:servicoId', async (req, res) => {
-    try {
-        const { empresaId, servicoId } = req.params;
-        if (!empresaId || !servicoId) return res.status(400).json({ error: "empresaId ou servicoId não fornecido." });
-
-        const servicosRef = db.collection('empresarios').doc(empresaId).collection('servicos').doc(servicoId);
-        const docSnap = await servicosRef.get();
-        if (!docSnap.exists) {
-            return res.status(404).json({ error: "Serviço não encontrado." });
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 16px 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
         }
-        await servicosRef.delete();
-        res.json({ success: true });
-    } catch (error) {
-        console.error("❌ Erro ao excluir serviço:", error);
-        res.status(500).json({ error: "Erro ao excluir serviço." });
+        .header-actions { display: flex; gap: 12px; }
+        .page-header h1 { font-size: 1.9rem; font-weight: 800; color: #1e293b; }
+        .btn-new, .btn-special {
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn-new { background-color: var(--primary-color); }
+        .btn-new:hover { background-color: #4338ca; }
+        .btn-special { background-color: var(--special-color); }
+        .btn-special:hover { background-color: #15803d; }
+        .categoria-titulo { font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin-top: 24px; margin-bottom: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .servico-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .servico-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .servico-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .servico-titulo { font-size: 1.3em; font-weight: bold; color: #333; margin: 0; }
+        .servico-descricao { color: #666; margin: 10px 0; line-height: 1.4; }
+        .servico-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; }
+        .servico-preco { font-size: 1.2em; font-weight: bold; color: #28a745; }
+        .servico-duracao { color: #666; font-size: 0.9em; }
+        .servico-acoes { display: flex; gap: 10px; }
+        .btn-acao { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; }
+        .btn-editar { background-color: #ffc107; color: #333; }
+        .btn-editar:hover { background-color: #e0a800; }
+        .btn-excluir { background-color: #dc3545; color: white; }
+        .btn-excluir:hover { background-color: #c82333; }
+        @media (max-width: 900px) { 
+            body { flex-direction: column; }
+            .main-content { margin-left: 0; padding: 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+        }
+        .modal-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.ativo { display: flex; opacity: 1; }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25); text-align: center; max-width: 420px; width: 90%; }
+        .modal-botoes { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        #modal-btn-confirmar { background-color: #d9534f; color: white; }
+        #modal-btn-cancelar { background-color: #f0f0f0; color: #333; }
+        #loader { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; font-size: 1.2em; backdrop-filter: blur(2px); }
+    </style>
+</head>
+<body>
+
+<div id="loader" style="display: none;">Carregando...</div>
+<div id="menu-container"></div>
+
+<main class="main-content">
+    <div class="page-header">
+        <h1>Nossos Serviços</h1>
+        <div class="header-actions">
+            <a href="novo-servico.html" class="btn-new">Adicionar Novo Serviço</a>
+            <a href="promocoes.html" id="btnPromocoes" class="btn-special">
+                <i class="fas fa-tags"></i> Preços Especiais
+            </a>
+        </div>
+    </div>
+    
+    <div id="lista-servicos">
+        <p style="color:#fff;">Carregando serviços...</p>
+    </div>
+</main>
+
+<div id="custom-confirm-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h2 id="modal-titulo"></h2>
+        <p id="modal-mensagem"></p>
+        <div class="modal-botoes">
+            <button id="modal-btn-cancelar">Cancelar</button>
+            <button id="modal-btn-confirmar">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { verificarAcesso } from './userService.js';
+
+    async function carregarMenuEPainel() {
+        try {
+            const sessao = await verificarAcesso();
+            if (!sessao || !sessao.user) return;
+
+            let papelUsuario = sessao.papeis || [];
+            if (papelUsuario.length === 0) {
+                if(sessao.isAdmin) papelUsuario.push('admin');
+                if(sessao.isOwner) papelUsuario.push('dono');
+                if(papelUsuario.length === 0) papelUsuario.push('funcionario');
+            }
+
+            // Carrega menu
+            const response = await fetch('menu-lateral.html');
+            if (!response.ok) throw new Error('menu-lateral.html não encontrado');
+            document.getElementById('menu-container').innerHTML = await response.text();
+            const menuModule = await import('./menu-lateral.js');
+            if (menuModule.ativarMenuLateral) await menuModule.ativarMenuLateral(papelUsuario);
+
+            // Agora os scripts de serviços podem inicializar normalmente
+        } catch (error) {
+            console.error("Erro crítico ao inicializar a página de serviços:", error);
+            document.querySelector('.main-content').innerHTML = '<h1>Ocorreu um erro</h1><p>Não foi possível carregar a página. Tente novamente.</p>';
+        }
     }
-});
 
-// ======================================================================
+    // Inicia carregamento seguro
+    carregarMenuEPainel();
+</script>
 
-const PORT = process.env.PORT || 4242;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}!`));
+<script src="./firebase-config.js" type="module"></script>
+<script src="./vitrini-utils.js" type="module"></script>
+<script src="./servicos.js" type="module"></script> 
+
+</body>
+</html>ta ${PORT}!`));
