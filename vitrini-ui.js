@@ -1,5 +1,5 @@
 // ======================================================================
-//          VITRINI-UI.JS - UI da Vitrine com suporte Multiempresa
+//           VITRINI-UI.JS - UI da Vitrine com suporte Multiempresa
 // ======================================================================
 
 /**
@@ -15,7 +15,7 @@ export function toggleLoader(mostrar, mensagem = 'A carregar informações do ne
 
 /**
  * Preenche os dados iniciais da empresa.
- * ALTERAÇÃO: Serviços agrupados por categoria, visual centralizado, sem botões.
+ * ✅ CORRIGIDO: Adicionada verificação de segurança para 'toFixed' em preco e duracao.
  */
 export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
     document.getElementById('logo-publico').src = dadosEmpresa.logoUrl || "https://placehold.co/100x100/e0e7ff/6366f1?text=Logo";
@@ -29,7 +29,7 @@ export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
     }
     document.getElementById('info-negocio').innerHTML = `<p>${dadosEmpresa.descricao || "Descrição não informada."}</p>`;
 
-    // ----------- SERVIÇOS AGRUPADOS POR CATEGORIA (ALTERAÇÃO AQUI) -----------
+    // ----------- SERVIÇOS AGRUPADOS POR CATEGORIA (CORREÇÃO AQUI) -----------
     const servicosContainer = document.getElementById('info-servicos');
     if (todosOsServicos && todosOsServicos.length > 0) {
         // Agrupa por categoria
@@ -46,12 +46,15 @@ export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
             `<div class="info-categoria-bloco">
                 <div class="info-categoria-titulo">${cat}</div>
                 <div class="info-categoria-servicos">
-                    ${agrupados[cat].map(s =>
-                        `<div class="servico-info-item">
+                    ${agrupados[cat].map(s => {
+                        // ✅ CORREÇÃO: Garante que preco e duracao são números antes de formatar
+                        const preco = s.preco !== undefined && s.preco !== null ? Number(s.preco) : 0;
+                        const duracao = s.duracao !== undefined && s.duracao !== null ? Number(s.duracao) : 0;
+                        return `<div class="servico-info-item">
                             <strong>${s.nome}</strong>
-                            <span>R$ ${s.preco.toFixed(2)} (${s.duracao} min)</span>
-                        </div>`
-                    ).join('')}
+                            <span>R$ ${preco.toFixed(2)} (${duracao} min)</span>
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>`
         ).join('');
@@ -63,7 +66,7 @@ export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
     const contatoContainer = document.getElementById('info-contato');
     let htmlContato = '';
     if (dadosEmpresa.localizacao) {
-        htmlContato += `<div class="info-item"><strong>Endereço:</strong><p>${dadosEmpresa.localizacao}</p></div><div class="info-item"><strong>Localização:</strong><div id="map-container" style="width: 100%; height: 250px; border-radius: 12px; background-color: #eef2ff; margin-top: 10px; overflow: hidden; border: 1px solid #e0e7ff;"><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(dadosEmpresa.localizacao)}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>`;
+        htmlContato += `<div class="info-item"><strong>Endereço:</strong><p>${dadosEmpresa.localizacao}</p></div><div class="info-item"><strong>Localização:</strong><div id="map-container" style="width: 100%; height: 250px; border-radius: 12px; background-color: #eef2ff; margin-top: 10px; overflow: hidden; border: 1px solid #e0e7ff;"><iframe src="https://maps.google.com/maps?q=$${encodeURIComponent(dadosEmpresa.localizacao)}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>`;
     }
     if (dadosEmpresa.horarioFuncionamento) {
         htmlContato += `<div class="info-item"><strong>Horário de Atendimento:</strong><p style="white-space: pre-wrap;">${dadosEmpresa.horarioFuncionamento}</p></div>`;
@@ -132,12 +135,16 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
     function renderizarServicosDaCategoria(catAtual) {
         const servicosCat = agrupados[catAtual];
         document.getElementById('servicos-por-categoria').innerHTML = servicosCat.map(s => {
+            // ✅ CORREÇÃO: Garante que preco e duracao são números antes de formatar
+            const preco = s.preco !== undefined && s.preco !== null ? Number(s.preco) : 0;
+            const duracao = s.duracao !== undefined && s.duracao !== null ? Number(s.duracao) : 0;
+            
             if (permiteMultiplos) {
                 return `
                     <div class="card-servico card-checkbox" data-id="${s.id}">
                         <div class="servico-info-multi">
                             <span class="servico-nome">${s.nome}</span>
-                            <span class="servico-detalhes">R$ ${s.preco.toFixed(2)} - ${s.duracao} min</span>
+                            <span class="servico-detalhes">R$ ${preco.toFixed(2)} - ${duracao} min</span>
                         </div>
                         <span class="checkmark"></span>
                     </div>
@@ -146,7 +153,7 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
                 return `
                     <div class="card-servico" data-id="${s.id}">
                         <span class="servico-nome">${s.nome}</span>
-                        <span class="servico-detalhes">R$ ${s.preco.toFixed(2)} - ${s.duracao} min</span>
+                        <span class="servico-detalhes">R$ ${preco.toFixed(2)} - ${duracao} min</span>
                     </div>
                 `;
             }
@@ -432,8 +439,9 @@ export function atualizarResumoAgendamento(servicosSelecionados) {
     if (!container || !textoEl) return;
 
     if (servicosSelecionados.length > 0) {
-        const duracaoTotal = servicosSelecionados.reduce((acc, s) => acc + s.duracao, 0);
-        const precoTotal = servicosSelecionados.reduce((acc, s) => acc + s.preco, 0);
+        // ✅ CORREÇÃO: Usar 0 como fallback para duracao e preco em reduce
+        const duracaoTotal = servicosSelecionados.reduce((acc, s) => acc + (s.duracao || 0), 0);
+        const precoTotal = servicosSelecionados.reduce((acc, s) => acc + (s.preco || 0), 0);
         textoEl.innerHTML = `<strong>Resumo:</strong> ${servicosSelecionados.length} serviço(s) | <strong>Duração:</strong> ${duracaoTotal} min | <strong>Total:</strong> R$ ${precoTotal.toFixed(2)}`;
         container.style.display = 'block';
     } else {
@@ -453,6 +461,7 @@ export function atualizarResumoAgendamentoFinal() {
         el.innerHTML = '';
         return;
     }
+    // ✅ CORREÇÃO: Usar 0 como fallback para duracao e preco em reduce
     const total = servicos.reduce((soma, s) => soma + (s.preco || 0), 0);
     const duracao = servicos.reduce((soma, s) => soma + (s.duracao || 0), 0);
     el.innerHTML = `
