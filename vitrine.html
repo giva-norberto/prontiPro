@@ -107,8 +107,8 @@
         .vitrine-card[data-menu-card="assinatura"] i {
             color: #fff;
         }
-        
-        /* ✅ NOVO ESTILO PARA O CARD DE PETS */
+        
+        /* ✅ NOVO ESTILO PARA O CARD DE PETS */
         .vitrine-card[data-menu-card="pets"] {
             background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%); /* Laranja/Rosa */
             color: #fff;
@@ -244,16 +244,16 @@
                     </a>
                 </div>
             </div>
-            
+            
             <div id="menu-assinatura" class="menu-content" style="display: none;">
                 <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-                
+                
                 <h2>Planos de Assinatura</h2> 
                 <div id="cards-planos-vitrine">
                     <p class="info" style="color: #fff;">A carregar planos disponíveis...</p>
                 </div>
             </div>
-            
+            
             <div id="menu-agendamento" class="menu-content" style="display: none;">
                 <button class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
                 <div class="card"> <h2>Faça o seu Agendamento</h2>
@@ -331,8 +331,8 @@
         // ✅ CORREÇÃO 1: Adicionando função para ler ID da URL
         function getEmpresaIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
-            // Verifica 'empresaId' ou 'empresa' (o que foi visto no seu link de teste)
-            return params.get('empresaId') || params.get('empresa');
+            // Verifica 'empresaId' ou 'empresa' (como no seu link de teste)
+            return params.get('empresaId') || params.get('empresa'); 
         }
 
         import { db, auth } from './vitrini-firebase.js';
@@ -412,7 +412,7 @@
                             document.getElementById('cards-planos-vitrine').innerHTML = '<p style="color: #fff;">Erro: ID da empresa não encontrado.</p>';
                         }
                     }
-                    // ✅ Lógica de navegação para 'pets' (simplesmente exibe o menu)
+                    // ✅ Lógica de navegação para 'pets'
                     if (card.dataset.menuCard === 'pets') {
                         e.preventDefault();
                         mainNavigationContainer.style.display = 'none';
@@ -561,7 +561,7 @@
                 const card = e.target.closest('.vitrine-card'); if (!card) return; e.preventDefault();
                 const menuKey = card.dataset.menuCard;
                 if (menuKey === 'perfil' && !state.currentUser) { fazerLogin(); return; }
-                
+                
                 // ✅ Adicionado tratamento para o card 'pets'
                 if (menuKey === 'pets') {
                     showContentSection(`menu-pets`);
@@ -588,11 +588,12 @@
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
         
-        // Função para ler o ID da URL (se o localStorage falhar)
-        // Duplicando a função aqui para garantir que funcione neste bloco, se os blocos não estiverem consolidados.
+        // Importando renderizarServicosVitrine (assumindo que está no bloco acima)
+        // Duplicando a função aqui para garantir a execução se os blocos estiverem separados.
+        // Se este é o único bloco que importa doc/getDoc, ele precisa da função getEmpresaIdFromUrl.
         function getEmpresaIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
-            return params.get('empresaId') || params.get('empresa');
+            return params.get('empresaId') || params.get('empresa'); 
         }
 
         // SUA LÓGICA ORIGINAL DE ATUALIZAÇÃO DO HEADER, 100% INALTERADA
@@ -620,8 +621,8 @@
                 nomeUsuarioEl.textContent = '';
             }
         }
-        
-        // ✅ CORREÇÃO 2: Lógica de Inicialização Corrigida
+
+        // ✅ CORREÇÃO 2: Lógica de Inicialização Corrigida
         async function inicializarPagina() {
             const loader = document.getElementById('vitrine-loader');
             const content = document.getElementById('vitrine-content');
@@ -634,12 +635,13 @@
             const ID_DE_TESTE = 'ID_DE_TESTE_PADRAO'; 
             if (!empresaId) {
                 empresaId = ID_DE_TESTE;
-                console.warn(`ID da empresa não encontrado. Usando ID de teste: ${ID_DE_TESTE}.`);
+                // O console.error original foi substituído por console.warn com o fallback
+                console.warn(`ID da empresa não encontrado no localStorage ou URL. Usando ID de teste: ${ID_DE_TESTE}.`);
             } else {
                 // Se o ID foi encontrado (seja no local storage ou URL), garante que esteja no local storage
                 localStorage.setItem("empresaAtivaId", empresaId);
             }
-            
+
             // Só tenta buscar no Firebase se o ID não for o ID de teste
             if (empresaId && empresaId !== ID_DE_TESTE) {
                 try {
@@ -653,12 +655,16 @@
                 } catch (error) {
                     console.error("Erro ao buscar dados da empresa:", error);
                 }
-            }
+            } else if (empresaId === ID_DE_TESTE) {
+                console.info("Continuando com ID de Teste, dados reais do Firebase não serão carregados.");
+            }
             
-            // Se renderizarServicosVitrine estiver acessível globalmente, chama
+            // Se renderizarServicosVitrine estiver acessível (no bloco JS anterior), chama
+            // Isso assume que o bloco anterior ou o vitrine.js define esta função
             if (typeof renderizarServicosVitrine === 'function') {
                 renderizarServicosVitrine(empresaId);
             }
+
 
             onAuthStateChanged(auth, (usuario) => {
                 atualizarHeaderCard(dadosEmpresa, usuario);
