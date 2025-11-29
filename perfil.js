@@ -383,6 +383,21 @@ window.addEventListener('DOMContentLoaded', () => {
         if (elements.btnCriarNovaEmpresa) elements.btnCriarNovaEmpresa.style.display = 'inline-flex';
     }
 
+    function validarUrlVitrine(url) {
+        // Validações simples:
+        if (!url || typeof url !== 'string' || url.length < 10) return false;
+        // URL base tem que iniciar com origem
+        if (!url.startsWith(window.location.origin)) return false;
+        // Precisa conter .html?empresa= ou r.html?c=
+        if (
+            !url.includes('vitrine.html?empresa=') &&
+            !url.includes('vitrine-pet.html?empresa=') &&
+            !url.includes('r.html?c=')
+        ) return false;
+        // Pode adicionar mais regras se quiser
+        return true;
+    }
+
     function preencherFormulario(dadosEmpresa) {
         if (!dadosEmpresa) return;
         if (elements.h1Titulo) elements.h1Titulo.textContent = "Edite o Perfil do seu Negócio";
@@ -399,18 +414,27 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!empresaId) return;
 
         const slug = dadosEmpresa.slug;
-        
-        // 🎯 LÓGICA CORRIGIDA: Escolher vitrine com base no tipo de empresa
-        const tipoEmpresa = dadosEmpresa.tipoEmpresa || 'estetica';
-        const vitrineBase = (tipoEmpresa === 'pets' || tipoEmpresa === 'pet') ? 'vitrine-pet.html' : 'vitrine.html';
+        // Escolher vitrine com base no tipo de empresa
+        const tipoEmpresa = dadosEmpresa.tipoEmpresa || 'estetica';
+        const vitrineBase = (tipoEmpresa === 'pets' || tipoEmpresa === 'pet') ? 'vitrine-pet.html' : 'vitrine.html';
 
         const urlCompleta = slug
             ? `${window.location.origin}/r.html?c=${slug}`
             : `${window.location.origin}/${vitrineBase}?empresa=${empresaId}`;
 
-        if (elements.urlVitrineEl) elements.urlVitrineEl.textContent = urlCompleta;
-        if (elements.btnAbrirVitrine) elements.btnAbrirVitrine.href = urlCompleta;
-        if (elements.btnAbrirVitrineInline) elements.btnAbrirVitrineInline.href = urlCompleta;
+        // Validação do link
+        let urlValida = validarUrlVitrine(urlCompleta);
+
+        if (!urlValida) {
+            console.warn("URL de vitrine gerada é inválida:", urlCompleta);
+            if (elements.urlVitrineEl) elements.urlVitrineEl.textContent = "Link inválido";
+            if (elements.btnAbrirVitrine) elements.btnAbrirVitrine.href = "#";
+            if (elements.btnAbrirVitrineInline) elements.btnAbrirVitrineInline.href = "#";
+        } else {
+            if (elements.urlVitrineEl) elements.urlVitrineEl.textContent = urlCompleta;
+            if (elements.btnAbrirVitrine) elements.btnAbrirVitrine.href = urlCompleta;
+            if (elements.btnAbrirVitrineInline) elements.btnAbrirVitrineInline.href = urlCompleta;
+        }
 
         const manifest = {
             name: dadosEmpresa.nomeFantasia || "Pronti Negócio",
@@ -442,7 +466,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function copiarLink() {
         const urlCompleta = document.getElementById('url-vitrine-display').textContent;
-        if (!urlCompleta) return;
+        if (!urlCompleta || urlCompleta === "Link inválido") return;
         navigator.clipboard.writeText(urlCompleta).then(() => {
             alert("Link da vitrine copiado!");
         }, () => {
