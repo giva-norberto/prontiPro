@@ -116,7 +116,7 @@ window.addEventListener('DOMContentLoaded', () => {
         empresaSelectorGroup: document.getElementById('empresa-selector-group'),
         selectEmpresa: document.getElementById('selectEmpresa'),
 
-        tipoEmpresa: document.getElementById('tipoEmpresa') // ⭐ ADIÇÃO
+        tipoEmpresa: document.getElementById('tipoEmpresa') // ⭐
     };
 
     let empresaId = null;
@@ -174,7 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
     async function handleFormSubmit(event) {
         event.preventDefault();
 
-        // Modal de confirmação customizado padrão Pronti
+        // Modal personalizada Pronti
         const confirmado = await showCustomConfirm(
             "Confirmação de Cadastro",
             "Tem certeza que deseja salvar as informações do perfil?"
@@ -217,7 +217,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 trialDisponivel: trialDisponivel,
                 trialMotivoBloqueio: trialMotivoBloqueio,
 
-                tipoEmpresa: elements.tipoEmpresa?.value || "estetica"
+                // ⭐ ALTERAÇÃO ÚNICA PEDIDA:
+                tipoEmpresa: "pets"  
             };
 
             const valorSlugInput = elements.slugInput.value.trim();
