@@ -783,3 +783,78 @@ input[type="date"]:focus {
     padding: 6px 0;
     background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
 }
+/* ===============================================
+   TEMA PET (Exclusivo: aplicado via .tema-pet no <body>)
+   =============================================== */
+body.tema-pet {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe4f1 90%);
+    color: #4B2D15;
+}
+
+body.tema-pet .sidebar-vitrine,
+body.tema-pet .card,
+body.tema-pet .card-agendamento,
+body.tema-pet .header-vitrine-card,
+body.tema-pet .servico-info-item {
+    background: rgba(253, 241, 225, 0.95);
+    border-color: #ffdab9 !important;
+    color: #4e2e07 !important;
+    box-shadow: 0 8px 32px rgba(255, 204, 153, 0.05);
+}
+
+body.tema-pet .main-content-vitrine {
+    background: none !important;
+}
+
+body.tema-pet .btn-confirmar-agendamento,
+body.tema-pet #btn-confirmar-agendamento {
+    background: linear-gradient(135deg, #ffb347 0%, #ffcc80 90%);
+    color: #fff !important;
+    border: none;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.15);
+}
+body.tema-pet .btn-cancelar {
+    background: linear-gradient(135deg, #e57373 0%, #ffcdd2 100%);
+    color: white;
+}
+body.tema-pet .botoes-agendamento .btn-toggle.ativo {
+    background: linear-gradient(135deg, #ffb347, #ffcc80);
+    color: #4e2e07;
+    border-color: #ffb347;
+}
+
+body.tema-pet #logo-publico,
+body.tema-pet .card-profissional img {
+    border-color: #ffb347 !important;
+    background: #fff9f0 !important;
+}
+
+body.tema-pet #nome-negocio-publico,
+body.tema-pet .card h2,
+body.tema-pet .info-categoria-titulo {
+    background: linear-gradient(90deg, #ffb347 0%, #ffcc80 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    color: #ffb347;
+}
+
+body.tema-pet .card-profissional.selecionado {
+    border-color: #fbc02d !important;
+    background: linear-gradient(90deg, #fff3e0 0%, #ffe4f1 100%);
+}
+
+body.tema-pet .card-servico.selecionado {
+    background: linear-gradient(135deg, #ffecb3 0%, #ffe4e1 100%);
+    color: #4e2e07 !important;
+}
+
+body.tema-pet .servico-nome,
+body.tema-pet .servico-info-item strong {
+    color: #de5706 !important;
+}
+
+body.tema-pet .servico-info-item span {
+    color: #ffb347 !important;
+}
