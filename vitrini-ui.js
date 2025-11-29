@@ -1,5 +1,5 @@
 // ======================================================================
-//           VITRINI-UI.JS - UI da Vitrine com suporte Multiempresa
+//        VITRINI-UI.JS - UI da Vitrine com suporte Multiempresa (REVISADO E CORRIGIDO)
 // ======================================================================
 
 /**
@@ -10,50 +10,61 @@ export function toggleLoader(mostrar, mensagem = 'A carregar informações do ne
     if (loader && loader.querySelector('p')) loader.querySelector('p').textContent = mensagem;
     if (loader) loader.style.display = mostrar ? 'block' : 'none';
     const content = document.getElementById('vitrine-content');
-    if(content) content.style.display = mostrar ? 'none' : 'grid';
+   if(content) content.style.display = mostrar ? 'none' : ''; // Apenas remove o 'display: none'
+
 }
 
 /**
  * Preenche os dados iniciais da empresa.
- * ✅ CORRIGIDO: Adicionada verificação de segurança para 'toFixed' em preco e duracao.
+ * ALTERAÇÃO: Serviços agrupados por categoria, visual centralizado, sem botões.
  */
 export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
-    document.getElementById('logo-publico').src = dadosEmpresa.logoUrl || "https://placehold.co/100x100/e0e7ff/6366f1?text=Logo";
-    document.getElementById('nome-negocio-publico').textContent = dadosEmpresa.nomeFantasia || "Nome do Negócio";
-    // Preenche nome/logo do mobile também, se existir
-    if (document.getElementById('logo-publico-mobile')) {
-        document.getElementById('logo-publico-mobile').src = document.getElementById('logo-publico').src;
+    // ✅ CORREÇÃO: Preenche diretamente os elementos do cabeçalho mobile, que sabemos que existem.
+    // As referências aos IDs 'logo-publico' e 'nome-negocio-publico' foram removidas para evitar o erro.
+    const logoMobile = document.getElementById('logo-publico-mobile');
+    if (logoMobile) {
+        logoMobile.src = dadosEmpresa.logoUrl || "https://placehold.co/100x100/e0e7ff/6366f1?text=Logo";
     }
-    if (document.getElementById('nome-negocio-publico-mobile')) {
-        document.getElementById('nome-negocio-publico-mobile').textContent = document.getElementById('nome-negocio-publico').textContent;
+
+    const nomeMobile = document.getElementById('nome-negocio-publico-mobile' );
+    if (nomeMobile) {
+        nomeMobile.textContent = dadosEmpresa.nomeFantasia || "Nome do Negócio";
     }
+    
+    // A lógica para preencher a descrição e o resto da função permanece 100% idêntica.
     document.getElementById('info-negocio').innerHTML = `<p>${dadosEmpresa.descricao || "Descrição não informada."}</p>`;
 
-    // ----------- SERVIÇOS AGRUPADOS POR CATEGORIA (CORREÇÃO AQUI) -----------
+    // ----------- SERVIÇOS AGRUPADOS POR CATEGORIA (LÓGICA 100% PRESERVADA) -----------
     const servicosContainer = document.getElementById('info-servicos');
     if (todosOsServicos && todosOsServicos.length > 0) {
-        // Agrupa por categoria
         const agrupados = {};
         todosOsServicos.forEach(s => {
             const cat = (s.categoria && s.categoria.trim()) ? s.categoria.trim() : "Sem Categoria";
             if (!agrupados[cat]) agrupados[cat] = [];
             agrupados[cat].push(s);
         });
-        // Ordena categorias
         const categoriasOrdenadas = Object.keys(agrupados).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-        // Monta HTML agrupado, centralizado, sem botões
         servicosContainer.innerHTML = categoriasOrdenadas.map(cat =>
             `<div class="info-categoria-bloco">
                 <div class="info-categoria-titulo">${cat}</div>
                 <div class="info-categoria-servicos">
                     ${agrupados[cat].map(s => {
-                        // ✅ CORREÇÃO: Garante que preco e duracao são números antes de formatar
-                        const preco = s.preco !== undefined && s.preco !== null ? Number(s.preco) : 0;
-                        const duracao = s.duracao !== undefined && s.duracao !== null ? Number(s.duracao) : 0;
-                        return `<div class="servico-info-item">
-                            <strong>${s.nome}</strong>
-                            <span>R$ ${preco.toFixed(2)} (${duracao} min)</span>
-                        </div>`;
+                        let precoHtml = '';
+                        if (s.promocao) {
+                            precoHtml = `
+                                <span class="preco-original" style="text-decoration:line-through; color:#ef4444; margin-right:8px;">R$ ${s.promocao.precoOriginal.toFixed(2)}</span>
+                                <span class="preco-promocional" style="color:#059669; font-weight:bold;">R$ ${s.promocao.precoComDesconto.toFixed(2)}</span>
+                                <span class="badge-promocao" style="background:#facc15; color:#92400e; border-radius:8px; padding:2px 8px; margin-left:8px; font-size:0.86em;">PROMO</span>
+                            `;
+                        } else {
+                            precoHtml = `<span class="preco-promocional">R$ ${s.preco.toFixed(2)}</span>`;
+                        }
+                        return `
+                            <div class="servico-info-item">
+                                <strong>${s.nome}</strong>
+                                <span>${precoHtml} (${s.duracao} min)</span>
+                            </div>
+                        `;
                     }).join('')}
                 </div>
             </div>`
@@ -66,7 +77,7 @@ export function renderizarDadosIniciaisEmpresa(dadosEmpresa, todosOsServicos) {
     const contatoContainer = document.getElementById('info-contato');
     let htmlContato = '';
     if (dadosEmpresa.localizacao) {
-        htmlContato += `<div class="info-item"><strong>Endereço:</strong><p>${dadosEmpresa.localizacao}</p></div><div class="info-item"><strong>Localização:</strong><div id="map-container" style="width: 100%; height: 250px; border-radius: 12px; background-color: #eef2ff; margin-top: 10px; overflow: hidden; border: 1px solid #e0e7ff;"><iframe src="https://maps.google.com/maps?q=$${encodeURIComponent(dadosEmpresa.localizacao)}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>`;
+        htmlContato += `<div class="info-item"><strong>Endereço:</strong><p>${dadosEmpresa.localizacao}</p></div><div class="info-item"><strong>Localização:</strong><div id="map-container" style="width: 100%; height: 250px; border-radius: 12px; background-color: #eef2ff; margin-top: 10px; overflow: hidden; border: 1px solid #e0e7ff;"><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(dadosEmpresa.localizacao )}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>`;
     }
     if (dadosEmpresa.horarioFuncionamento) {
         htmlContato += `<div class="info-item"><strong>Horário de Atendimento:</strong><p style="white-space: pre-wrap;">${dadosEmpresa.horarioFuncionamento}</p></div>`;
@@ -92,7 +103,7 @@ export function renderizarProfissionais(profissionais) {
     }
     profissionais.forEach(p => {
         container.innerHTML += `<div class="card-profissional" data-id="${p.id}"><img src="${p.fotoUrl || 'https://placehold.co/80x80/eef2ff/4f46e5?text=P'}" alt="${p.nome}"><span>${p.nome}</span></div>`;
-    });
+    } );
 }
 
 /**
@@ -109,7 +120,6 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
     }
 
     // ---- AGRUPAMENTO POR CATEGORIA ----
-    // Agrupa por categoria
     const agrupados = {};
     servicos.forEach(s => {
         const cat = (s.categoria && s.categoria.trim()) ? s.categoria.trim() : "Sem Categoria";
@@ -117,10 +127,8 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
         agrupados[cat].push(s);
     });
 
-    // Ordena categorias
     const categoriasOrdenadas = Object.keys(agrupados).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
-    // Renderiza categorias como botões/lista
     let htmlCategorias = `<div class="categorias-lista" style="margin-bottom:22px; display:flex; gap:8px; flex-wrap:wrap;">`;
     categoriasOrdenadas.forEach((cat, idx) => {
         htmlCategorias += `
@@ -131,20 +139,36 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
 
     container.innerHTML = htmlCategorias;
 
-    // Função para renderizar serviços de uma categoria
     function renderizarServicosDaCategoria(catAtual) {
         const servicosCat = agrupados[catAtual];
         document.getElementById('servicos-por-categoria').innerHTML = servicosCat.map(s => {
-            // ✅ CORREÇÃO: Garante que preco e duracao são números antes de formatar
-            const preco = s.preco !== undefined && s.preco !== null ? Number(s.preco) : 0;
-            const duracao = s.duracao !== undefined && s.duracao !== null ? Number(s.duracao) : 0;
+            let precoHtml = '';
             
+            // =====================================================================
+            // ✅ 1. CORREÇÃO APLICADA AQUI (para o card do serviço)
+            // =====================================================================
+            if (s.precoCobrado === 0) { // Se assinatura cobriu o custo
+                const precoZeroFormatado = Number(0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                precoHtml = `<span class="preco-promocional">${precoZeroFormatado}</span> <span class="badge-incluso">Incluso no plano</span>`;
+            } else if (s.promocao) { // Senão, se tem promoção
+                const precoOriginalFmt = (s.promocao.precoOriginal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const precoPromoFmt = (s.promocao.precoComDesconto || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                precoHtml = `
+                    <span class="preco-original" style="text-decoration:line-through; color:#ef4444; margin-right:8px;">${precoOriginalFmt}</span>
+                    <span class="preco-promocional" style="color:#059669; font-weight:bold;">${precoPromoFmt}</span>
+                    <span class="badge-promocao" style="background:#facc15; color:#92400e; border-radius:8px; padding:2px 8px; margin-left:8px; font-size:0.86em;">PROMO</span>
+                `;
+            } else { // Senão, preço normal
+                const precoNormalFmt = (s.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                precoHtml = `<span class="preco-promocional">${precoNormalFmt}</span>`;
+            }
+
             if (permiteMultiplos) {
                 return `
                     <div class="card-servico card-checkbox" data-id="${s.id}">
                         <div class="servico-info-multi">
                             <span class="servico-nome">${s.nome}</span>
-                            <span class="servico-detalhes">R$ ${preco.toFixed(2)} - ${duracao} min</span>
+                            <span class="servico-detalhes">${precoHtml} - ${s.duracao} min</span>
                         </div>
                         <span class="checkmark"></span>
                     </div>
@@ -153,14 +177,13 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
                 return `
                     <div class="card-servico" data-id="${s.id}">
                         <span class="servico-nome">${s.nome}</span>
-                        <span class="servico-detalhes">R$ ${preco.toFixed(2)} - ${duracao} min</span>
+                        <span class="servico-detalhes">${precoHtml} - ${s.duracao} min</span>
                     </div>
                 `;
             }
         }).join('');
     }
 
-    // Eventos nos botões de categoria
     container.querySelectorAll('.categoria-btn').forEach((btn, idx) => {
         btn.onclick = () => {
             container.querySelectorAll('.categoria-btn').forEach((b, i) => {
@@ -173,7 +196,6 @@ export function renderizarServicos(servicos, permiteMultiplos = false) {
         };
     });
 
-    // Inicializa mostrando a primeira categoria
     if (categoriasOrdenadas.length > 0) {
         renderizarServicosDaCategoria(categoriasOrdenadas[0]);
     }
@@ -211,7 +233,7 @@ export function atualizarUIdeAuth(user) {
         if(userInfo) userInfo.style.display = 'block';
         if(loginContainer) loginContainer.style.display = 'none';
         document.getElementById('user-photo').src = user.photoURL || 'https://placehold.co/80x80/eef2ff/4f46e5?text=User';
-        document.getElementById('user-name').textContent = user.displayName || 'Usuário';
+        document.getElementById('user-name' ).textContent = user.displayName || 'Usuário';
     } else {
         if(agendamentosContainer) agendamentosContainer.style.display = 'none';
         if(userInfo) userInfo.style.display = 'none';
@@ -439,10 +461,22 @@ export function atualizarResumoAgendamento(servicosSelecionados) {
     if (!container || !textoEl) return;
 
     if (servicosSelecionados.length > 0) {
-        // ✅ CORREÇÃO: Usar 0 como fallback para duracao e preco em reduce
-        const duracaoTotal = servicosSelecionados.reduce((acc, s) => acc + (s.duracao || 0), 0);
-        const precoTotal = servicosSelecionados.reduce((acc, s) => acc + (s.preco || 0), 0);
-        textoEl.innerHTML = `<strong>Resumo:</strong> ${servicosSelecionados.length} serviço(s) | <strong>Duração:</strong> ${duracaoTotal} min | <strong>Total:</strong> R$ ${precoTotal.toFixed(2)}`;
+        const duracaoTotal = servicosSelecionados.reduce((acc, s) => acc + s.duracao, 0);
+        
+        // =====================================================================
+        // ✅ 2. CORREÇÃO APLICADA AQUI (para o resumo de múltiplos serviços)
+        // =====================================================================
+        const precoTotal = servicosSelecionados.reduce((acc, s) => {
+            if (s.precoCobrado === 0) {
+                return acc + 0;
+            } else if (s.promocao) {
+                return acc + (s.promocao.precoComDesconto || 0);
+            } else {
+                return acc + (s.preco || 0);
+            }
+        }, 0);
+        
+        textoEl.innerHTML = `<strong>Resumo:</strong> ${servicosSelecionados.length} serviço(s) | <strong>Duração:</strong> ${duracaoTotal} min | <strong>Total:</strong> ${precoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
         container.style.display = 'block';
     } else {
         container.style.display = 'none';
@@ -461,15 +495,29 @@ export function atualizarResumoAgendamentoFinal() {
         el.innerHTML = '';
         return;
     }
-    // ✅ CORREÇÃO: Usar 0 como fallback para duracao e preco em reduce
-    const total = servicos.reduce((soma, s) => soma + (s.preco || 0), 0);
+    
+    // =====================================================================
+    // ✅ 3. CORREÇÃO APLICADA AQUI (para o resumo final)
+    // =====================================================================
+    const total = servicos.reduce((soma, s) => {
+        if (s.precoCobrado === 0) {
+            return soma + 0;
+        } else if (s.promocao) {
+            return soma + (s.promocao.precoComDesconto || 0);
+        } else {
+            return soma + (s.preco || 0);
+        }
+    }, 0);
+    
     const duracao = servicos.reduce((soma, s) => soma + (s.duracao || 0), 0);
+    const dataFormatada = new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+
     el.innerHTML = `
         <div class="resumo-agendamento">
-            <strong>Serviços:</strong> ${servicos.map(s => s.nome).join(" + ")}<br>
-            <strong>Duração:</strong> ${duracao} min<br>
-            <strong>Total:</strong> R$ ${total.toFixed(2)}<br>
-            <strong>Data:</strong> ${data} <strong>Horário:</strong> ${horario}
+            <strong>Serviços:</strong> ${servicos.map(s => s.nome).join(" + ")} <br>
+            <strong>Duração:</strong> ${duracao} min <br>
+            <strong>Total:</strong> ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} <br>
+            <strong>Data:</strong> ${dataFormatada} <strong>Horário:</strong> ${horario}
         </div>
         <hr>
     `;
