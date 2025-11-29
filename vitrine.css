@@ -802,3 +802,168 @@ input[type="date"]:focus {
     font-weight: 600;
     font-size: 1rem;
 }
+/*
+   ==============================================
+   TEMA PETS para vitrine/agendamento
+   ==============================================
+   Copie e cole após seu CSS principal para aplicar o tema!
+*/
+
+/* Fundo amigável e soft para PETS */
+body {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+    color: #69543b !important;
+}
+
+/* Header e Cards principal */
+.header-vitrine,
+.header-vitrine-card,
+.card {
+    background: #fffaf6 !important;
+    border: 2px solid #ffd4af !important;
+    box-shadow: 0 8px 32px rgba(250, 186, 129, 0.13) !important;
+}
+
+.header-vitrine-card #logo-publico,
+#logo-publico,
+#logo-publico-mobile {
+    border: 2.5px solid #fa824c !important;
+    background: #fff7f0 !important;
+    box-shadow: 0 2px 12px rgba(250, 186, 129, 0.15) !important;
+}
+
+#nome-negocio-publico,
+#nome-negocio-publico-mobile,
+.header-vitrine-card #nome-negocio-publico {
+    background: none !important;
+    color: #fa824c !important;
+    text-shadow: 0 2px 4px #ffdab6;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
+
+.header-vitrine-card .boas-vindas-usuario {
+    color: #bc832b !important;
+}
+
+.header-vitrine-card .usuario-logado-nome {
+    color: #fa824c !important;
+    background: rgba(255,220,205,0.64) !important;
+}
+
+/* GRID dos cards */
+.vitrine-container,
+.main-content-vitrine,
+.menu-content,
+.card-plano-vitrine {
+    background: none !important;
+    border-radius: 16px !important;
+    box-sizing: border-box;
+}
+
+.dashboard-grid-cards {
+    gap: 22px !important;
+}
+
+.vitrine-card[data-menu-card="agendamento"] {
+    background: linear-gradient(135deg, #ffb38c 0%, #ffe7d4 100%) !important;
+    color: #fa824c !important;
+}
+.vitrine-card[data-menu-card="visualizacao"] {
+    background: linear-gradient(135deg, #bafbe5 0%, #fff2d4 100%) !important;
+    color: #367999 !important;
+}
+.vitrine-card[data-menu-card="informacoes"] {
+    background: linear-gradient(135deg, #ffe4cf 0%, #fee6e2 100%) !important;
+    color: #986f48 !important;
+}
+.vitrine-card[data-menu-card="perfil"] {
+    background: linear-gradient(135deg, #ffb38c 0%, #fcb69f 100%) !important;
+    color: #bc6c25 !important;
+}
+.vitrine-card[data-menu-card="assinatura"] {
+    background: linear-gradient(135deg, #6ec6ca 0%, #ffd6aa 100%) !important;
+    color: #fff !important;
+}
+.vitrine-card[data-menu-card="pets"] {
+    background: linear-gradient(140deg, #ffc2c2 0%, #fad4c9 90%, #bff6ed 100%) !important;
+    color: #ff6c6c !important;
+    border: 2px solid #ffe3da !important;
+    box-shadow: 0 3px 12px #f9f3f0 !important;
+}
+.vitrine-card[data-menu-card="pets"] i {
+    color: #ff7c5d !important;
+}
+
+/* Planos */
+.card-plano-vitrine {
+    background: #ffefe6 !important;
+    border-radius: 18px !important;
+    border: 2px solid #ffe9d6 !important;
+    color: #3e2c18 !important;
+    box-shadow: 0 8px 20px rgba(220,170,130,0.11) !important;
+}
+.card-plano-vitrine h3 {
+    color: #fa824c !important;
+}
+.card-plano-vitrine .preco {
+    color: #f19232 !important;
+}
+.card-plano-vitrine .btn-assinar-plano {
+    background: linear-gradient(90deg, #6ec6ca 0%, #fa824c 100%) !important;
+    color: #fff !important;
+}
+.badge-incluso {
+    background: #fae5d9 !important;
+    color: #fa824c !important;
+}
+.badge-promocao {
+    background: #fa824c !important;
+    color: #fff !important;
+}
+.preco-original { color: #b99763 !important; }
+.preco-promocional { color: #fa824c !important; }
+
+.servico-card {
+    background: #fff6f0 !important;
+    color: #bc832b !important;
+    border: 1.5px solid #ffe9d6 !important;
+    box-shadow: 0 2px 8px #ffd6aa33 !important;
+}
+
+/* Botão voltar/ação */
+.btn-voltar {
+    background: #ffe9d6 !important;
+    color: #fa824c !important;
+}
+
+/* Modal & container */
+.modal-overlay {
+    background: rgba(255, 170, 102, 0.17) !important;
+    backdrop-filter: blur(6px) !important;
+}
+.modal-auth-container {
+    background: #fff6f0 !important;
+    color: #fa824c !important;
+    box-shadow: 0 10px 40px #ffd6aa44 !important;
+    border-radius: 16px !important;
+}
+#modal-auth-close-btn {
+    background: #ffd6aa !important;
+    color: #fa824c !important;
+}
+
+/* Responsivo PETS */
+@media (max-width: 900px), (max-width: 480px) {
+    .vitrine-container,
+    .main-content-vitrine,
+    .sidebar-vitrine, 
+    .card,
+    .card-plano-vitrine, 
+    .header-vitrine-card {
+        max-width: 100vw !important;
+        border-radius: 12px !important;
+        box-sizing: border-box;
+        background: none !important;
+    }
+}
