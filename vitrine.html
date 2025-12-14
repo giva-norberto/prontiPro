@@ -192,6 +192,37 @@
 
         .badge-incluso { background: #10b981; color: #fff; border-radius: 4px; font-size: 0.85em; font-weight: 700; padding: 2px 7px; margin-left: 8px; }
         .servico-card { background: #fff; color: #374151; padding: 14px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+        /* ============================
+           Adição: CSS do modal "pet obrigatório"
+           (inserido sem alterar seus estilos existentes)
+           ============================ */
+        /* Modal pet - visual consistente com modal-auth-container */
+        .modal-pet-overlay { display: none; position: fixed; z-index: 10010; left: 0; top: 0; width: 100%; height: 100%; background: rgba(30,41,59,0.66); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal-pet-container { background: #fff; padding: 1.5rem; border-radius: 12px; width: 92%; max-width: 480px; box-shadow: 0 12px 48px rgba(2,6,23,0.28); color: #333; }
+        .modal-pet-container h2 { margin: 0 0 12px 0; font-size: 1.3rem; text-align:center; }
+        .modal-pet-row { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+        .modal-pet-row input, .modal-pet-row select { padding: 10px; border-radius:8px; border: 1px solid #e6e6e6; font-size:1rem; }
+        .modal-pet-actions { display:flex; gap:10px; justify-content:center; margin-top:8px; }
+        .modal-pet-btn { padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+        .modal-pet-btn-save { background: #4f46e5; color:#fff; }
+        .modal-pet-btn-cancel { background: #f3f4f6; color:#333; }
+
+        /* Bloqueio da interface quando modal ativo */
+        body.pet-required #vitrine-content,
+        body.pet-required #vitrine-loader,
+        body.pet-required .vitrine-card,
+        body.pet-required .menu-content,
+        body.pet-required .btn-voltar {
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.5;
+        }
+        body.pet-required .modal-pet-overlay { pointer-events: auto; }
+
+        @media (max-width: 520px) {
+          .modal-pet-container { padding: 12px; max-width: 94%; }
+        }
     </style>
 </head>
 <body>
@@ -270,7 +301,10 @@
         </main>
     </div>
 
+    <!-- Modal Custom Confirm (existing) -->
     <div id="custom-confirm-modal" class="modal-overlay"><div class="modal-box"><h3 id="modal-titulo">Confirmar Ação</h3><p id="modal-mensagem">Tem a certeza que deseja prosseguir?</p><div class="modal-botoes"><button id="modal-btn-cancelar">Cancelar</button><button id="modal-btn-confirmar">Confirmar</button></div></div></div>
+
+    <!-- Existing Auth Modal (unchanged) -->
     <div id="modal-auth-janela" class="modal-overlay">
         <div class="modal-auth-container">
             <button id="modal-auth-close-btn" title="Fechar">&times;</button>
@@ -307,7 +341,39 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- NEW: Modal Pet Obrigatório (global, não remove nada existente) -->
+    <div id="modal-pet-obrigatorio" class="modal-pet-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal-pet-container" role="document">
+        <h2>Cadastro do Pet</h2>
+        <p style="text-align:center;color:#64748b;margin:0;">Para continuar, cadastre seu pet</p>
+
+        <div class="modal-pet-row" style="margin-top:12px;">
+          <input id="pet-nome" placeholder="Nome do pet" autocomplete="off" required>
+          <select id="pet-especie" required>
+            <option value="">Espécie</option>
+            <option value="cachorro">Cachorro</option>
+            <option value="gato">Gato</option>
+            <option value="outro">Outro</option>
+          </select>
+          <input id="pet-raca" placeholder="Raça (opcional)">
+          <select id="pet-porte">
+            <option value="">Porte (opcional)</option>
+            <option value="pequeno">Pequeno</option>
+            <option value="medio">Médio</option>
+            <option value="grande">Grande</option>
+          </select>
+        </div>
+
+        <div class="modal-pet-actions">
+          <button id="btn-salvar-pet" class="modal-pet-btn modal-pet-btn-save">Salvar Pet</button>
+          <button id="btn-cancelar-pet" class="modal-pet-btn modal-pet-btn-cancel">Sair</button>
+        </div>
+
+        <div id="pet-feedback" style="display:none;color:#c00;text-align:center;margin-top:8px;font-size:0.95rem;"></div>
+      </div>
+    </div>
+
     <script type="module" src="./vitrine.js"></script>
     
     <script type="module">
@@ -651,5 +717,123 @@
             });
         });
     </script>
+
+    <!-- NEW: Módulo Pet-Required integrado sem alterar o fluxo atual -->
+    <script type="module">
+      import { auth, db } from './vitrini-firebase.js';
+      import { collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+      // init once
+      const modal = document.getElementById('modal-pet-obrigatorio');
+      const btnSalvar = document.getElementById('btn-salvar-pet');
+      const btnCancelar = document.getElementById('btn-cancelar-pet');
+      const feedback = document.getElementById('pet-feedback');
+
+      function collectionPathForPets(uid) {
+        // default path: clientes/{uid}/pets
+        return ['clientes', uid, 'pets'];
+      }
+
+      async function userHasPets(uid) {
+        try {
+          const [col, docId, sub] = collectionPathForPets(uid);
+          const petsCol = collection(db, col, docId, sub);
+          const snap = await getDocs(petsCol);
+          return !snap.empty;
+        } catch (err) {
+          console.error('[pet-check] erro', err);
+          return false;
+        }
+      }
+
+      function showModal() {
+        document.body.classList.add('pet-required');
+        if (modal) { modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); }
+        if (feedback) { feedback.style.display = 'none'; feedback.textContent = ''; }
+        if (btnSalvar) btnSalvar.disabled = false;
+      }
+      function hideModal() {
+        if (modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
+        document.body.classList.remove('pet-required');
+      }
+
+      async function savePetForUser(uid) {
+        try {
+          if (btnSalvar) btnSalvar.disabled = true;
+          if (feedback) { feedback.style.display = 'none'; feedback.textContent = ''; }
+          const nome = document.getElementById('pet-nome').value.trim();
+          const especie = document.getElementById('pet-especie').value;
+          const raca = document.getElementById('pet-raca').value.trim();
+          const porte = document.getElementById('pet-porte').value;
+
+          if (!nome || !especie) {
+            if (feedback) { feedback.textContent = 'Preencha nome e espécie do pet.'; feedback.style.display = 'block'; }
+            if (btnSalvar) btnSalvar.disabled = false;
+            return false;
+          }
+
+          const [col, docId, sub] = collectionPathForPets(uid);
+          const petsCol = collection(db, col, docId, sub);
+
+          await addDoc(petsCol, {
+            nome,
+            especie,
+            raca: raca || null,
+            porte: porte || null,
+            criadoEm: serverTimestamp()
+          });
+
+          hideModal();
+          return true;
+        } catch (err) {
+          console.error('[savePet] erro', err);
+          if (feedback) { feedback.textContent = 'Erro ao salvar. Tente novamente.'; feedback.style.display = 'block'; }
+          if (btnSalvar) btnSalvar.disabled = false;
+          return false;
+        }
+      }
+
+      if (btnSalvar) {
+        btnSalvar.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const user = auth.currentUser;
+          if (!user) {
+            if (feedback) { feedback.textContent = 'Usuário não autenticado.'; feedback.style.display = 'block'; }
+            return;
+          }
+          await savePetForUser(user.uid);
+        });
+      }
+      if (btnCancelar) {
+        btnCancelar.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (feedback) { feedback.textContent = 'Você precisa cadastrar um pet para continuar.'; feedback.style.display = 'block'; }
+        });
+      }
+
+      // Hook: checar ao logar sem alterar seu onAuthStateChanged existente
+      onAuthStateChanged(auth, async (user) => {
+        try {
+          if (!user || !user.uid) {
+            // assegura que modal não fique visível se deslogado
+            hideModal();
+            return;
+          }
+          const exists = await userHasPets(user.uid);
+          if (!exists) {
+            showModal();
+            const nomeEl = document.getElementById('pet-nome');
+            if (nomeEl) setTimeout(()=>nomeEl.focus(), 200);
+          } else {
+            hideModal();
+          }
+        } catch (err) {
+          console.error('[pet] erro no check onAuthStateChanged', err);
+        }
+      });
+
+    </script>
+
 </body>
-</html>>
+</html>
